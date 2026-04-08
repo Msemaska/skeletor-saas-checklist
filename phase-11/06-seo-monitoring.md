@@ -17,6 +17,19 @@ Use Google Search Console. It's free, provides data directly from Google (not es
 - Submit your sitemap URL to Search Console immediately after the marketing site goes live
 - Set up Bing Webmaster Tools as well — Bing can import settings from Google Search Console directly, minimal additional effort
 
+## Instant Indexing with Google Indexing API
+
+Don't wait for Google to discover new pages — tell it directly. The Google Indexing API lets you notify Google the moment a page is published or updated, forcing it into the crawl queue immediately instead of waiting hours or days.
+
+**Design decisions:**
+- Set up a Google Cloud service account with Indexing API access, add it as an owner in Search Console
+- Call the Indexing API from your CMS/publishing pipeline every time a page is created, updated, or deleted (blog posts, landing pages, programmatic SEO pages)
+- Use the `URL_UPDATED` type for new and updated pages, `URL_DELETED` for removed pages
+- Batch requests when publishing multiple pages at once (the API supports up to 200 URLs per batch)
+- The API has a daily quota (default 200 requests/day) — sufficient for most SaaS publishing cadences. Request a quota increase if you're doing programmatic SEO at scale.
+- This does not guarantee indexing — it guarantees Google will crawl the URL promptly. Pages still need to pass Google's quality checks.
+- Combine with sitemap submission — the Indexing API handles real-time notifications, the sitemap is the persistent record of all pages
+
 ## What to Monitor
 
 ### Index Coverage
@@ -62,6 +75,7 @@ Google Search Console reports Core Web Vitals from real user data, complementing
 
 - Google Search Console is verified and showing data
 - Sitemap is submitted and accepted (no errors)
+- Indexing API notifies Google when a page is published, updated, or deleted
 - Marketing pages are indexed (appear in the "Indexed" pages report)
 - App pages and auth pages are NOT indexed
 - No critical crawl errors on launch pages
@@ -73,6 +87,8 @@ Google Search Console reports Core Web Vitals from real user data, complementing
 - **Sitemap rejected** — the sitemap URL is wrong, the sitemap format is invalid, or the sitemap includes URLs that return 4xx/5xx. Verify the sitemap is accessible and all URLs in it return 200.
 - **Spike in crawl errors after a deployment** — a route was removed or renamed without a redirect. Add 301 redirects for old URLs that are no longer valid.
 - **Search Console shows queries you don't want to rank for** — your content is being interpreted differently than intended. Review the page content and meta tags to better align with your target keywords.
+- **Indexing API quota exceeded** — you're publishing more pages than the daily quota allows. Request a quota increase via Google Cloud Console, or prioritize high-value pages and let the sitemap handle the rest.
+- **Indexing API call succeeds but page isn't indexed** — the API only guarantees a crawl, not indexing. Check that the page returns 200, has no noindex tag, and meets Google's quality standards.
 
 ## Implementation Checklist
 
@@ -82,6 +98,8 @@ Google Search Console reports Core Web Vitals from real user data, complementing
 - [ ] robots.txt verified: marketing pages allowed, app/auth/API pages blocked
 - [ ] Index coverage checked (all marketing pages indexed)
 - [ ] No critical crawl errors on launch pages
+- [ ] Google Indexing API set up (service account created, added as Search Console owner)
+- [ ] Indexing API integrated into publishing pipeline (new/updated/deleted pages trigger API calls)
 - [ ] Weekly review scheduled for first 3 months (index coverage, crawl errors, search performance)
 - [ ] Core Web Vitals report reviewed monthly
 

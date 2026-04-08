@@ -114,7 +114,7 @@ Ordered from foundational to nice-to-have.
 3. `[2]` Uptime monitoring & public status page — **UptimeRobot**
 4. `[2]` Performance monitoring (Core Web Vitals, page speed) — **Vercel Speed Insights (managed) / Sentry Performance (self-hosted)**
 5. `[2]` Revenue metrics (MRR, ARR, churn, LTV, CAC) — **Stripe Dashboard + PostHog**
-6. `[2]` SEO monitoring (Search Console, sitemap submission, crawl errors, index coverage, rankings) — **Google Search Console**
+6. `[2]` SEO monitoring (Search Console, sitemap submission, crawl errors, index coverage, rankings, Indexing API) — **Google Search Console + Google Indexing API**
 
 ## Phase 12: Email & Domain Setup
 
