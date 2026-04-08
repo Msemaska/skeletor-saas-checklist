@@ -53,7 +53,28 @@ The project is structured as a phased checklist with deep-dive reference files:
 1. **Clone this repo** as the foundation for your new project. Don't modify the original — it's your reusable template.
 2. **Work through Phase 0** — fill in your specific strategy: value proposition, ICP, competitors, pricing, domain, name.
 3. **Create your product-specific docs** — `docs/copy-bank.md` and `docs/keyword-research.md` are outputs you create for each product.
-4. **Work phase by phase** — each phase builds on the previous one. Don't skip ahead.
+4. **Work in three passes** — not phase by phase, but priority by priority (see below).
+
+### Three-Pass Workflow
+
+The checklist marks every item with a priority: `[1]` need during development, `[2]` need before launch, `[3]` need after launch. Work through the checklist in three passes, following the phase order within each pass to respect dependencies.
+
+**Pass 1 — Build (all `[1]` items, phases in order):**
+Go through phases 0→20 in order, doing only `[1]` items. This builds the product foundations: strategy, brand, testing infrastructure, core product, UI, infrastructure. The AI codes, the human registers for services and collects API keys in parallel.
+
+After Pass 1: you have a working product in a development environment.
+
+**Pass 2 — Launch Prep (all `[2]` items, phases in order):**
+Go through phases 0→20 again, doing only `[2]` items. This prepares for launch: marketing site, email infrastructure, security audit, legal pages, support platform, observability, content, go-to-market prep. The product is built, so these items have something real to work with.
+
+After Pass 2: you're ready to launch.
+
+**Pass 3 — Post-Launch (all `[3]` items, as needed):**
+After launch, work through `[3]` items based on what the business needs. These are growth, retention, accessibility, content scaling, and nice-to-haves. Not everything in Pass 3 is needed — prioritise based on user feedback and business metrics.
+
+**Why this order works:** phases are already ordered by dependency (database before auth, auth before billing). Following the phase order within each pass prevents race conditions. Pass 1 builds everything Pass 2 needs to verify and polish. Pass 2 prepares everything Pass 3 needs to grow.
+
+**Parallel work during each pass:** while the AI is building `[1]` items, the human works through the Human Task List below — registering for services, collecting API keys, recording videos, writing copy. The AI and human work in parallel, not sequentially.
 
 ### Working with AI
 

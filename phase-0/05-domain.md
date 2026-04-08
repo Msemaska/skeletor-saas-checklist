@@ -49,12 +49,6 @@ Immediately after purchase:
 - Point nameservers to Cloudflare (automatic if bought there)
 - Don't add any records yet — those come in later phases (Vercel, email, etc.)
 
-### Step 4: Secure Related Domains (optional)
-
-Consider buying:
-- Common misspellings of your domain
-- The .com if you bought a different TLD (redirect it later)
-- Country-specific TLDs if targeting specific markets (.co.uk, .de, etc.)
 
 Don't go overboard — 1-3 extra domains max.
 
