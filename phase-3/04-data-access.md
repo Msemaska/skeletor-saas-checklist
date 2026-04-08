@@ -202,6 +202,14 @@ Some logic can live in the database (triggers, functions) instead of application
 
 **The rule:** if it must happen on EVERY write to a table regardless of how the write happens (application, migration script, admin tool), put it in the database. If it only matters in the context of a specific user action, keep it in application code.
 
+## Security Considerations
+
+- Server Actions and API routes validate auth before any business logic — no exceptions
+- Owner/creator IDs are always set server-side from the session, never accepted from client requests
+- Service functions receive the database client as a parameter — the caller determines user vs system context
+- Webhook endpoints validate signatures before processing — excluded from session-based auth
+- Never return raw database errors to the client — structured error responses only
+
 ## What to Test
 
 - Server Actions validate auth before any business logic

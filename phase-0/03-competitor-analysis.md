@@ -97,7 +97,7 @@ You can have secondary differentiators, but lead with one.
 - [ ] Feature comparison matrix created
 - [ ] Top 3 competitor weaknesses / gaps identified
 - [ ] Primary positioning angle chosen
-- [ ] Comparison page drafts (for Phase 10: Content)
+- [ ] Comparison page drafts (for Phase 14: Content)
 
 ## Common Mistakes
 

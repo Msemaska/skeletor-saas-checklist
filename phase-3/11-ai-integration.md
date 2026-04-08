@@ -138,6 +138,14 @@ For generating images (not understanding them — that's Claude Vision).
 - AI-generated images should be flagged as such in the database (for content moderation, attribution, or user transparency)
 - Cost per image: ~$0.04 for standard raster, ~$0.08 for vector (Recraft V4), ~$0.25-0.30 for Pro tier. Track and meter this.
 
+## Security Considerations
+
+- AI API keys are stored in server environment variables — never exposed to the client
+- AI calls go through the service layer — the client never calls AI APIs directly
+- AI responses displayed to other users must be filtered for harmful content
+- AI prompt injection: user input included in prompts should be clearly delineated from system instructions
+- Cost controls: per-request cost ceiling and per-workspace usage limits prevent abuse
+
 ## What to Test
 
 - AI API calls go through the service layer (never from client)

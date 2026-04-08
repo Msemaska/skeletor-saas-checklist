@@ -100,6 +100,13 @@ Decide upfront which entities and which columns are searchable. Every searchable
 - **Monitor slow queries** — search queries on large tables can become slow. Check query performance regularly and add indexes as needed.
 - **Don't search on page load** — search is triggered by user input, not by default. Loading a page should show a filtered/sorted list, not search results.
 
+## Security Considerations
+
+- Search queries are always scoped to the current workspace — never return cross-tenant results
+- Search queries go through the service layer with RLS enforced — not direct database queries from the client
+- Search input is parameterized — no string concatenation into queries
+- Search results respect the same access controls as direct data access
+
 ## What to Test
 
 - Search results are scoped to the current workspace (no cross-tenant results)

@@ -119,12 +119,19 @@ This is covered in 01-database-schema.md under indexing strategy.
 
 Redis (or Upstash) is NOT part of the default stack. Add it only if you hit one of these specific needs:
 
-- **API rate limiting at scale** — if you're offering a public API (Phase 16) and need per-key rate limiting across distributed serverless functions. For auth rate limiting on a standard SaaS, database-backed counters are sufficient.
+- **API rate limiting at scale** — if you're offering a public API (Phase 4) and need per-key rate limiting across distributed serverless functions. For auth rate limiting on a standard SaaS, database-backed counters are sufficient.
 - **Job queues** — if Trigger.dev/Inngest aren't suitable and you need a self-hosted queue (BullMQ requires Redis)
 - **Shared state across serverless functions** — if you need to share state between concurrent serverless invocations that can't use the database (rare)
 - **Real-time leaderboards or counters** — if you need atomic increments at thousands of operations per second
 
 If you're not hitting one of these, you don't need Redis. Next.js cache + TanStack Query + Postgres handles everything a standard SaaS needs.
+
+## Security Considerations
+
+- Cache tags must include workspace ID — prevents cross-tenant cache leakage
+- User-specific data (profile, billing state) is never cached in shared server cache
+- Cache invalidation is mandatory after every mutation — stale cached data is a data leak if permissions changed
+- Billing/subscription state is never cached — always fetched fresh
 
 ## What to Test
 

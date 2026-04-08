@@ -158,7 +158,7 @@ Sentry captures errors that reach production — unhandled exceptions, unexpecte
 - Typed application errors (ValidationError, NotFoundError, etc.) are NOT sent to Sentry — they're expected application flow, not bugs
 - Only system errors (unhandled exceptions, unexpected failures) go to Sentry
 - Include context in Sentry reports: user ID, workspace ID, current URL, relevant entity IDs
-- Set up Sentry alerts for error spikes — if the error rate jumps, the team gets notified (this connects to Phase 9 Observability alerting)
+- Set up Sentry alerts for error spikes — if the error rate jumps, the team gets notified (this connects to Phase 11 Observability alerting)
 
 ## Error-to-Notification Bridge
 
@@ -169,6 +169,14 @@ When an error affects a user's pending action (background job failed, export fai
 - The user sees "Your export failed — please try again" in their notification inbox, not a raw error
 
 This applies to any error that occurs outside the request/response cycle — background jobs, scheduled tasks, webhook processing. If the user triggered the action, they need to know it failed.
+
+## Security Considerations
+
+- No stack traces, database error messages, or internal details reach the client
+- Typed application errors (validation, not found) are NOT sent to Sentry — only system errors
+- Logs never contain: passwords, tokens, API keys, full credit card numbers, personal data beyond user IDs
+- Error messages on auth endpoints don't reveal whether an account exists ("if account exists" language)
+- Request context in logs (user ID, workspace ID) enables audit trails without exposing sensitive data
 
 ## What to Test
 

@@ -31,7 +31,7 @@ Verify the app handles concurrent users without degrading.
 Catch slow queries before they affect users.
 
 **Design decisions:**
-- Enable `pg_stat_statements` in the database (covered in phase-3/01-database-schema.md for managed, phase-6/04-database-hosting.md for self-hosted)
+- Enable `pg_stat_statements` in the database (covered in phase-3/01-database-schema.md for managed, phase-7/04-database-hosting.md for self-hosted)
 - Review the 10 slowest queries weekly during development and before launch
 - Every query that takes more than 100ms should be investigated — check for missing indexes, inefficient joins, or unnecessary data fetching
 - Use `EXPLAIN ANALYZE` on suspicious queries to understand the query plan

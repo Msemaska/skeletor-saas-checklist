@@ -112,7 +112,7 @@ An attacker injects a script into a field (e.g., name: `<script>steal(cookies)</
 - **React handles most of it** — React escapes all content rendered via JSX by default. A string containing `<script>` is rendered as literal text, not executed. This covers the majority of XSS vectors.
 - **The danger is `dangerouslySetInnerHTML`** — if you ever render raw HTML (rich text editors, markdown rendering, email templates), you must sanitize it first. Use a library like DOMPurify to strip dangerous tags and attributes before rendering.
 - **Sanitize on output, not on input** — store the original text as-is, sanitize when rendering. This preserves the original data and lets you improve sanitization rules later without re-processing stored data.
-- **Content Security Policy (CSP) headers** — configured at the infrastructure level (Phase 6), CSP blocks inline scripts even if XSS sanitization fails. It's a defense-in-depth layer.
+- **Content Security Policy (CSP) headers** — configured at the infrastructure level (Phase 8), CSP blocks inline scripts even if XSS sanitization fails. It's a defense-in-depth layer.
 - **Never construct HTML from user input server-side** — if you're building HTML strings (for emails, PDFs, etc.), use a templating engine that auto-escapes, not string concatenation.
 
 ### SQL Injection

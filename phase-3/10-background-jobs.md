@@ -117,6 +117,13 @@ These run in response to a specific event, not on a schedule:
 
 pg_cron is for database housekeeping. Trigger.dev is for everything else.
 
+## Security Considerations
+
+- Background jobs run in system context (elevated access) — they must enforce their own access rules
+- Job inputs should verify that referenced resources exist and belong to the expected workspace before processing
+- System context credentials (service keys, database admin) are never logged in job output
+- Webhook-triggered jobs validate the webhook signature before queuing
+
 ## What to Test
 
 - Job executes successfully and updates the database

@@ -50,7 +50,7 @@ Every notification starts with an event. Events fall into three categories:
 - New user signed up
 - Subscription created/cancelled
 - Payment failed after all retries
-- These are supplemented by the observability stack (Sentry, Betterstack) for system-level alerts like error spikes and cron failures
+- These are supplemented by the observability stack (Sentry, UptimeRobot) for system-level alerts like error spikes and cron failures
 
 ## Channel Decision
 
@@ -128,7 +128,7 @@ The bell icon / notification inbox in the app UI.
 Events that the team or admins need to know about, not end users.
 
 **Design decisions:**
-- Critical system alerts (error spikes, cron failures, payment failures after all retries) are handled by the observability stack (Sentry, Betterstack) — not by the notification system. Don't build a second alerting system.
+- Critical system alerts (error spikes, cron failures, payment failures after all retries) are handled by the observability stack (Sentry, UptimeRobot) — not by the notification system. Don't build a second alerting system.
 - Business events (new sign-up, subscription change, churn) can be sent to a shared channel (Slack, Discord, email group) for team visibility
 - These are fire-and-forget — no read/unread tracking, no preferences, no digest. Just log and notify.
 - Use a simple webhook or background job to post to the team channel when these events occur
@@ -144,6 +144,13 @@ Use Novu as the notification infrastructure layer. It handles:
 - Integration with Resend for email delivery
 
 Novu sits between your events and your delivery channels. Your application triggers events through Novu's API, Novu checks preferences, applies digest rules, and delivers through the appropriate channel.
+
+## Security Considerations
+
+- Notifications are scoped to workspace — a user never receives notifications for a workspace they don't belong to
+- Check membership at delivery time, not event time — user may have been removed between event and delivery
+- Notification preferences bypass is limited to security and legal notifications only
+- In-app notification data visible to a user must pass through RLS or equivalent permission check
 
 ## What to Test
 
@@ -218,4 +225,4 @@ Novu sits between your events and your delivery channels. Your application trigg
 - Sending notifications to users who have been removed from the workspace
 - No deduplication for related events (5 separate notifications for 5 comments in 2 minutes)
 - Not handling email bounces (keeps sending to dead addresses, hurts sender reputation)
-- Building a custom alerting system for internal events when Sentry/Betterstack already handles this
+- Building a custom alerting system for internal events when Sentry/UptimeRobot already handles this

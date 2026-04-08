@@ -136,6 +136,13 @@ Two requests can check the limit simultaneously, both see "under limit," and bot
 - For seat-based usage: the unique constraint on (workspace_id, user_id) in workspace_members prevents duplicate members. The seat count check + insert should be wrapped in a transaction.
 - For storage-based usage: minor overshoot (by one upload) is acceptable — the next upload will be blocked. Perfect enforcement on storage is not worth the complexity.
 
+## Security Considerations
+
+- Usage counters are updated in system context only — users cannot modify their own usage counts
+- Limit checks run server-side in the service layer — client-side limit checks are informational only
+- Atomic increment-and-check prevents race condition exploitation (two requests passing the check simultaneously)
+- Plan and credit values are never accepted from client requests — always derived from the workspace's plan
+
 ## What to Test
 
 - Usage check happens BEFORE the action executes (not after)

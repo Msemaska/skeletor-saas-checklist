@@ -109,10 +109,11 @@ When creating or updating deep-dive files, search the web for current best pract
 │   ├── 04-data-access.md
 │   ├── 05-cache.md
 │   └── ... (remaining items 06-12)
-├── phase-4/                          # UI/UX
-├── phase-5/                          # Marketing Site
-├── phase-6/                          # Self-Hosted Infrastructure
-└── ...                               # Phases 7-20
+├── phase-4/                          # Public/Customer API
+├── phase-5/                          # UI/UX
+├── phase-6/                          # Marketing Site
+├── phase-7/                          # Self-Hosted Infrastructure
+└── ...                               # Phases 8-20
 ```
 
 ### Naming Conventions
@@ -143,6 +144,13 @@ Sections should be ordered by importance/dependency.
 ## Providers (if applicable)
 Comparison table of recommended tools.
 Only include providers that are genuine options — not exhaustive lists.
+
+## Security Considerations
+What could go wrong if this system is misconfigured or attacked.
+State the specific security decisions: what's exposed, what's locked down, what's encrypted, what's validated.
+These decisions are verified during the security audit (Phase 13).
+Not every file needs this — UI pattern files (component states, overlays) can skip it.
+Only include for files where a misconfiguration could expose data, allow unauthorized access, or compromise the system.
 
 ## Deliverables / Implementation Checklist
 Checkbox list of everything that needs to be done.

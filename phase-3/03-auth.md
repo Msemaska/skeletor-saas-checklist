@@ -249,7 +249,7 @@ GDPR and user trust require a clear account deletion path. This is more complex 
 
 **What to handle externally:**
 - Stripe customer record — cancel subscription, but Stripe retains billing history on their side
-- Email marketing lists — unsubscribe from all lists (Loops, ConvertKit, etc.)
+- Email marketing lists — unsubscribe from all marketing email lists (Resend)
 - Analytics — PostHog/analytics data should be anonymized, not deleted (aggregate data is still valuable)
 
 **Design decisions:**
