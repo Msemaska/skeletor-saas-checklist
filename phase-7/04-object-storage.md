@@ -10,6 +10,8 @@ Where user-uploaded files, images, and static assets are stored and served from.
 
 Use Cloudflare R2 for object storage. S3-compatible API, no egress fees, and integrates with Cloudflare's CDN for fast global delivery.
 
+**AI interface:** Cloudflare CLI (`wrangler`), Cloudflare MCP server.
+
 ## Architecture
 
 ```
@@ -23,7 +25,7 @@ Serving Flow (private):
   Client → App (generates signed URL) → R2
 ```
 
-The upload and serving architecture is the same as described in phase-3/06-file-uploads.md. This doc covers the infrastructure-level decisions for self-hosted deployments.
+The upload and serving architecture is the same as described in phase-3/06-file-uploads.md. This doc covers the infrastructure-level decisions.
 
 ## Bucket Configuration
 
@@ -68,6 +70,14 @@ If you need file storage entirely on your own servers (regulatory requirements, 
 - **CORS blocks uploads** — if the CORS configuration doesn't include your app's domain, browser-based uploads fail silently. Test uploads from the browser, not just from the server.
 - **Files accumulate without cleanup** — temporary uploads, orphaned files, and failed uploads take up space. The application's cleanup job (phase-3/10-background-jobs.md) handles this, but verify it's actually running and deleting files.
 - **Migration from one storage provider to another** — if the application uses the S3 API (which R2, MinIO, and S3 all support), migration is changing credentials and endpoint URL. No code changes needed.
+
+## Security Considerations
+
+- Private bucket access is controlled entirely by signed URLs. Signed URLs must have short expiry times (15 minutes for downloads, 5 minutes for uploads). A leaked signed URL grants temporary access — short expiry limits the window.
+- R2 API credentials (access key ID and secret) grant full read/write access to all buckets. Store them in the `.env` file on the server, never in the repository. Rotate credentials periodically and immediately if a breach is suspected.
+- Set hard upload size limits at the infrastructure level (R2 or MinIO configuration) as a backstop — application-level validation (covered in phase-3/06-file-uploads.md) handles the fine-grained rules, but the infrastructure must reject oversized payloads before they consume resources.
+- If using MinIO (fully self-hosted), the MinIO admin console must not be exposed to the internet. Run it on the Docker network only and access it via SSH tunnel if needed.
+- Cloudflare R2 encrypts data at rest by default. If using MinIO, enable server-side encryption and ensure the underlying disk is also encrypted.
 
 ## Implementation Checklist
 

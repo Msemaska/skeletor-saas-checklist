@@ -29,7 +29,7 @@ docker-compose.yml (local)
 Seed data populates the local database with enough data to develop and test against. This is not sample data for users (covered in phase-5/06-onboarding.md) — this is developer data.
 
 **Design decisions:**
-- Seed script lives in the repository (e.g., `scripts/seed.ts` or `supabase/seed.sql`)
+- Seed script lives in the repository (e.g., `scripts/seed.ts` or `scripts/seed.sql`)
 - The seed script is idempotent — running it twice doesn't create duplicate data. Check if data exists before inserting.
 - Seed data includes: at least one user per role (owner, admin, member, viewer), at least one workspace, enough entities to test pagination (25+ items), edge case data (long names, unicode characters, entities at usage limits)
 - Seed data uses deterministic IDs (hardcoded UUIDs, not random) so developers can reference specific entities in tests and during debugging
@@ -94,6 +94,13 @@ A new developer should be able to run the project with minimal setup.
 - **Developer's machine runs out of disk** — Docker images, volumes, and build cache accumulate. Document `docker system prune` as a periodic cleanup step.
 - **Hot reload not working** — if running the app inside a container, file system events may not propagate correctly (especially on macOS/Windows). Running `npm run dev` on the host avoids this issue.
 - **Different Node.js version** — pin the Node.js version in `.nvmrc` or `package.json` engines field. Developers use `nvm use` to match the project's version.
+
+## Security Considerations
+
+- `.env.local`, `.env.staging`, and `.env.production` must be in `.gitignore`. A single accidental commit puts secrets in the git history permanently — even deleting the file in a later commit doesn't remove it from history.
+- Never use production credentials in local development. Local `.env.local` should use test API keys, a local database, and sandbox payment credentials. A developer's machine is not a secured environment — production secrets on a laptop are a breach waiting to happen.
+- Seed data must be synthetic, never production data. Copying production data to local machines violates user privacy, may breach data protection regulations (GDPR, etc.), and exposes real user data on unsecured developer machines.
+- The local PostgreSQL container listens on a host port (e.g., 5432 or 5433) for developer tooling access. On shared networks, this means the database is accessible to other machines. Use a strong password even locally, and bind to `127.0.0.1` only in the compose file (`ports: "127.0.0.1:5432:5432"`).
 
 ## Implementation Checklist
 

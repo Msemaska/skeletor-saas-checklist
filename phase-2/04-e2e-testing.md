@@ -6,6 +6,8 @@
 
 Use Playwright.
 
+**AI interface:** Playwright CLI (`playwright`).
+
 ## What E2E Tests Cover
 
 E2E tests cover critical user paths only.

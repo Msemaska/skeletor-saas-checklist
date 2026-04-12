@@ -151,6 +151,8 @@ This allows filtering all logs for a specific user, workspace, or request when d
 
 Sentry captures errors that reach production — unhandled exceptions, unexpected failures, performance issues.
 
+**AI interface:** Sentry CLI (`sentry-cli`).
+
 **Design decisions:**
 - Install Sentry SDK for both server and client
 - Server-side: Sentry captures unhandled exceptions in Server Actions, API routes, and middleware automatically

@@ -8,8 +8,7 @@ Continuous tracking of how fast your app loads and responds. Performance issues 
 
 ## Provider
 
-- **Managed (Vercel):** Vercel Speed Insights — built-in, zero configuration, tracks Core Web Vitals from real users
-- **Self-hosted:** Sentry Performance — same Sentry SDK already installed for error tracking, add performance monitoring by enabling tracing
+Use Sentry Performance — same Sentry SDK already installed for error tracking, add performance monitoring by enabling tracing.
 
 ## Core Web Vitals
 
@@ -23,7 +22,7 @@ The metrics that matter for user experience:
 
 **Design decisions:**
 - Monitor these on real user traffic, not just synthetic tests (Lighthouse). Real User Monitoring (RUM) captures actual device and network conditions.
-- Vercel Speed Insights collects RUM automatically on every page load. Sentry Performance does the same via the client-side SDK.
+- Sentry Performance collects RUM automatically via the client-side SDK.
 - Track per-page — a slow dashboard page is a different problem than a slow landing page. Identify which pages are below target.
 
 ## Server-Side Performance
@@ -63,19 +62,19 @@ Monitoring tells you there's a problem. The fix depends on the cause:
 - Core Web Vitals meet targets on key pages (landing page, dashboard, data-heavy page)
 - Server-side response times under 200ms at 95th percentile
 - Bundle size under 200KB compressed per page
-- Performance data is being collected (Vercel Speed Insights or Sentry Performance dashboard shows data)
+- Performance data is being collected (Sentry Performance dashboard shows data)
 - Slow query detection is working (queries over 100ms are logged)
 
 ## Edge Cases
 
 - **Performance degrades gradually** — no single PR causes a spike, but over 3 months LCP goes from 1.5s to 3.5s. Weekly review of performance dashboards catches gradual degradation. Set up alerts for sustained threshold breaches, not just spikes.
-- **Performance differs by region** — users in Europe experience 2x latency because the server is in US. Ensure server/function region matches your primary user base (covered in phase-8/01-hosting-deployment.md for Vercel, phase-7/03-server-provisioning.md for self-hosted).
+- **Performance differs by region** — users in Europe experience 2x latency because the server is in US. Ensure server region matches your primary user base (covered in phase-7/03-server-provisioning.md).
 - **Performance tests pass in CI but fail for real users** — CI runs on fast machines with fast networks. RUM data from real users on slow devices and 3G connections tells the true story. Don't rely only on Lighthouse scores.
 - **Third-party script kills performance** — an analytics or chat widget loads a 500KB script. Monitor third-party script impact and lazy-load non-critical scripts.
 
 ## Implementation Checklist
 
-- [ ] Vercel Speed Insights enabled (managed) or Sentry Performance tracing enabled (self-hosted)
+- [ ] Sentry Performance tracing enabled
 - [ ] Core Web Vitals tracked on real user traffic (RUM)
 - [ ] LCP under 2.5s, INP under 200ms, CLS under 0.1 on key pages
 - [ ] Server-side response times tracked (95th percentile under 200ms)

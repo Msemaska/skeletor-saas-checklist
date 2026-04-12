@@ -121,7 +121,7 @@ The bell icon / notification inbox in the app UI.
 **Real-time delivery:**
 - Novu's inbox component handles real-time delivery out of the box — it maintains a websocket connection and updates the inbox when new notifications arrive
 - On reconnect after a dropped connection, Novu fetches any missed notifications automatically
-- If not using Novu's inbox component (custom UI), use Supabase Realtime (managed) or a raw websocket connection (self-hosted) to push notification events to connected clients. Only push the event ID over the websocket — the client fetches the full notification data from the database.
+- Use Novu's inbox SDK for all real-time in-app notification delivery. Do not build a custom websocket layer for notifications — Novu handles the connection, reconnection, and missed-message recovery.
 
 ## Internal / System Alerts
 

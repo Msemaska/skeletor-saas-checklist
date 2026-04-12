@@ -4,18 +4,20 @@
 
 ## What It Is
 
-How your application is packaged and run as Docker containers. Every service (app, workers, database, cache, reverse proxy) runs in its own container, managed together via Docker Compose.
+How your application is packaged as Docker containers for deployment to Railway and local development. Railway deploys containers directly from your Dockerfile — you control the build process and runtime environment. Docker Compose is used for local development only.
 
 ## Container Architecture
 
+**Production (Railway):** each service is a separate Railway service, each with its own Dockerfile. Railway handles networking, SSL, and orchestration. Database (Neon) and cache (Valkey) are Railway add-ons or external services — not containers you manage.
+
+**Local development (Docker Compose):**
 ```
 docker-compose.yml
   ├── app           (Next.js / your application)
   ├── worker        (background job processor — Trigger.dev worker or BullMQ)
-  ├── postgres      (database)
+  ├── postgres      (local database — mirrors Neon)
   ├── valkey        (cache / rate limiting / job queues — if needed)
-  ├── caddy         (reverse proxy — covered in 02-reverse-proxy.md)
-  └── storage       (MinIO or mount to R2 — if self-hosting object storage)
+  └── minio         (S3-compatible storage — mirrors Cloudflare R2)
 ```
 
 ## Dockerfile Design
@@ -31,14 +33,13 @@ docker-compose.yml
 - Set `NODE_ENV=production` in the production Dockerfile
 - Expose only the port your app listens on — don't expose database or internal service ports
 
-## Docker Compose
+## Docker Compose (Local Development Only)
 
 **Design decisions:**
-- One `docker-compose.yml` for local development, one `docker-compose.prod.yml` for production
+- One `docker-compose.yml` for local development — production runs on Railway, not Compose
 - All services on a shared Docker network — services reference each other by container name (e.g., `postgres:5432`, `valkey:6379`)
-- Use named volumes for persistent data (database, object storage) — never bind mounts for production data
+- Use named volumes for persistent data (database, object storage)
 - Health checks on every service — Compose should know when a service is ready, not just running
-- Restart policy: `unless-stopped` for production services
 - Environment variables loaded from `.env` file — never hardcoded in the compose file
 
 ## Container Registry
@@ -52,14 +53,13 @@ Store built images in a container registry so they can be pulled during deployme
 
 ## Orchestration
 
-**Single server:** Docker Compose is sufficient. Run `docker compose up -d` on the server. This handles 90% of MVP SaaS products.
-
-**Multiple servers:** Docker Swarm for multi-node deployments. Swarm is built into Docker, requires no additional tooling, and handles service distribution across nodes.
+Railway handles container orchestration in production — scaling, health checks, restarts, and networking. You don't manage orchestration yourself.
 
 **Design decisions:**
-- Start with a single server and Docker Compose. Scale to Swarm only when you've measured that a single server can't handle the load.
-- For a single server: all services run on one machine, Caddy handles routing, no orchestration complexity
-- For Swarm: services are distributed across nodes, Swarm handles placement and failover, Caddy sits in front as a load balancer
+- Each deployable service (app, worker) gets its own Railway service with its own Dockerfile
+- Railway handles horizontal scaling (replicas), restart policies, and health checks
+- No Docker Swarm, no Kubernetes — Railway abstracts this away
+- Local development uses Docker Compose for convenience, but production never uses Compose
 
 ## Edge Cases
 
@@ -70,17 +70,23 @@ Store built images in a container registry so they can be pulled during deployme
 - **Secrets in Docker images** — never put API keys or secrets in the Dockerfile or image layers. Pass them as environment variables at runtime via the compose file or Docker secrets.
 - **Image size bloat** — a 2GB image takes forever to push and pull. Multi-stage builds, Alpine base images, and `.dockerignore` (exclude node_modules, .git, test files) keep images under 200MB.
 
+## Security Considerations
+
+- Base images must come from official, trusted sources (Docker Hub's official library). Pin to a specific version — a compromised or unexpected base image compromises every container built from it.
+- Enable automated vulnerability scanning on pushed images. GitHub Advanced Security and Dependabot can scan Dockerfiles and container images for known CVEs — configure this in the repository settings.
+- The `.dockerignore` must exclude `.env`, `.env.local`, and any credential files to prevent secrets from being copied into the build context and leaking into image layers.
+- Container images are immutable after build — no SSH into running containers to modify code or install packages in production. Changes go through the CI/CD pipeline. If an attacker gains shell access to a running container, the non-root user constraint (Dockerfile Design section) limits the blast radius.
+- In local development, verify port exposure with `docker ps` — a misconfigured compose file can accidentally bind internal service ports to the host, exposing databases or caches.
+
 ## Implementation Checklist
 
 - [ ] Dockerfile for app (multi-stage, Alpine, non-root user, pinned Node version)
 - [ ] Dockerfile for worker (or shared with app, different entrypoint)
 - [ ] `.dockerignore` excludes node_modules, .git, test files, docs
 - [ ] docker-compose.yml for local development (all services)
-- [ ] docker-compose.prod.yml for production (or override file)
-- [ ] Shared Docker network for inter-service communication
-- [ ] Named volumes for persistent data (database, storage)
-- [ ] Health checks on every service
-- [ ] Restart policy `unless-stopped` on production services
+- [ ] Shared Docker network for local inter-service communication
+- [ ] Named volumes for local persistent data (database, storage)
+- [ ] Health checks on every service in compose
 - [ ] Environment variables in `.env` file, not hardcoded
 - [ ] Images pushed to GitHub Container Registry tagged with commit SHA
 - [ ] Old images cleaned up periodically

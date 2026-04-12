@@ -21,6 +21,21 @@ AI is non-deterministic in system design. Every conversation produces different 
 
 ---
 
+## How to Use This Repo
+
+Not every project needs every file. Before reading deep-dive files, determine the project scope and only load what's relevant. This prevents context bloat and keeps the AI focused on what matters.
+
+| Project Type | What to Read | What to Skip |
+|---|---|---|
+| **Full production SaaS** | Everything — all phases apply | Nothing |
+| **Internal tool / admin dashboard** | Phase 2 (Testing), Phase 3 (Core Product), Phase 7 (Infrastructure) | Phase 0 (Strategy/Positioning), Phase 1 (Brand), Phase 6 (Marketing Site), Phase 8+ (Growth/Analytics/SEO) |
+| **MVP / prototype** | Phase 3 (Core Product), Phase 5 (UI/UX) | Phase 0 (Strategy), Phase 1 (Brand), Phase 2 (Testing — minimal), Phase 4 (Public API), Phase 7+ (Infrastructure/Ops) |
+| **API-only service** | Phase 3 (Core Product), Phase 4 (Public API), Phase 7 (Infrastructure) | Phase 1 (Brand), Phase 5 (UI/UX), Phase 6 (Marketing Site) |
+
+**The rule:** If real users won't see it, you don't need the phases that serve real users (brand, marketing, positioning). If it's not customer-facing, skip customer-facing concerns. Read the master checklist first to identify which phases apply, then only open the deep-dive files for those phases.
+
+---
+
 ## Writing Rules
 
 ### User-First Design Bias
@@ -112,8 +127,8 @@ When creating or updating deep-dive files, search the web for current best pract
 ├── phase-4/                          # Public/Customer API
 ├── phase-5/                          # UI/UX
 ├── phase-6/                          # Marketing Site
-├── phase-7/                          # Self-Hosted Infrastructure
-└── ...                               # Phases 8-20
+├── phase-7/                          # Infrastructure (Railway, Neon, R2, DNS)
+└── ...                               # Phases 8-19
 ```
 
 ### Naming Conventions
@@ -148,7 +163,7 @@ Only include providers that are genuine options — not exhaustive lists.
 ## Security Considerations
 What could go wrong if this system is misconfigured or attacked.
 State the specific security decisions: what's exposed, what's locked down, what's encrypted, what's validated.
-These decisions are verified during the security audit (Phase 13).
+These decisions are verified during the security audit (Phase 12).
 Not every file needs this — UI pattern files (component states, overlays) can skip it.
 Only include for files where a misconfiguration could expose data, allow unauthorized access, or compromise the system.
 

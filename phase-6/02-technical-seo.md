@@ -4,7 +4,7 @@
 
 ## What It Is
 
-The technical foundation that allows search engines to discover, crawl, understand, and rank your pages. These are build-time decisions baked into the marketing site — not ongoing content or monitoring (that's phase-11/06-seo-monitoring.md).
+The technical foundation that allows search engines to discover, crawl, understand, and rank your pages. These are build-time decisions baked into the marketing site — not ongoing content or monitoring (that's phase-10/06-seo-monitoring.md).
 
 ## Meta Tags
 
@@ -37,7 +37,7 @@ A list of all pages on your site that search engines should index.
 - Use next-sitemap to auto-generate sitemap.xml and robots.txt at build time
 - The sitemap includes all marketing pages and blog posts
 - The sitemap excludes: app pages (/app/*), auth pages (/sign-in, /sign-up), API routes (/api/*)
-- Sitemap is submitted to Google Search Console after launch (covered in phase-11/06-seo-monitoring.md)
+- Sitemap is submitted to Google Search Console after launch (covered in phase-10/06-seo-monitoring.md)
 - Sitemap regenerates on every build — new blog posts are automatically included
 
 ## Robots.txt
@@ -111,7 +111,7 @@ JSON-LD markup that helps search engines understand your content and display ric
 - [ ] Canonical URLs set on every page
 - [ ] All images have alt text
 - [ ] OG image tested on Twitter, LinkedIn, and Discord
-- [ ] Sitemap submitted to Google Search Console (phase-11/06-seo-monitoring.md)
+- [ ] Sitemap submitted to Google Search Console (phase-10/06-seo-monitoring.md)
 
 ## Common Mistakes
 

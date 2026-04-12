@@ -4,7 +4,7 @@
 
 ## What It Is
 
-How code goes from a pull request to running in production. This covers the build pipeline (test, build, push image), the deployment pipeline (pull image, run migrations, restart services), zero-downtime deployments, and rollback strategy.
+How code goes from a pull request to running in production. GitHub Actions handles CI (test, lint, build verification). Railway handles CD (build image, deploy, route traffic). This separation keeps CI fast and deployment simple.
 
 ## Pipeline Architecture
 
@@ -15,142 +15,139 @@ Developer pushes code
 GitHub Actions (CI)
   │ 1. Run tests
   │ 2. Run linter
-  │ 3. Build Docker image
-  │ 4. Push image to registry
+  │ 3. Type check
   ▼
-GitHub Actions (CD) — on merge to main
-  │ 5. SSH into production server
-  │ 6. Pull new image
-  │ 7. Run database migrations
-  │ 8. Restart services with new image
-  │ 9. Health check
+Railway (CD) — on merge to main
+  │ 4. Build Docker image from Dockerfile
+  │ 5. Deploy new version
+  │ 6. Health check
+  │ 7. Route traffic to new version
   ▼
 Production running new version
 ```
 
-## CI: Build Pipeline
+**AI interface:** GitHub CLI (`gh`), Railway CLI (`railway`), Railway MCP server.
+
+## CI: Build Pipeline (GitHub Actions)
 
 Runs on every pull request and every push to main.
 
 **On pull requests:**
 - Run the full test suite (unit, integration, component tests)
-- Run the linter
-- Build the Docker image (verify it builds successfully)
-- Do NOT push the image to the registry or deploy — PRs are for validation only
+- Run the linter and type checker
+- Do NOT deploy — PRs are for validation only
+- Railway creates a preview environment automatically (covered in 02-hosting-deployment.md)
 
 **On merge to main:**
-- Run the full test suite
-- Build the Docker image
-- Push the image to GitHub Container Registry tagged with the commit SHA
-- Also tag the image as `latest`
-- Trigger the deployment pipeline
+- Run the full test suite (redundant with PR checks, but catches issues from merge conflicts)
+- Railway auto-deploys from the main branch — no deployment step needed in GitHub Actions
 
 **Design decisions:**
 - Tests must pass before merge — branch protection rules on main require passing CI
-- The build step uses the same Dockerfile as production — no separate "CI Dockerfile"
-- Cache Docker layers in GitHub Actions to speed up builds (use `docker/build-push-action` with cache-to/cache-from)
-- Fail fast — if tests fail, don't bother building the image
+- Fail fast — if tests fail, the PR can't merge
+- Cache dependencies in GitHub Actions (`actions/cache` for node_modules) to speed up runs
+- Keep CI under 5 minutes — slow CI discourages frequent commits
 
-## CD: Deployment Pipeline
+## CD: Deployment (Railway)
 
-Runs after a successful build on main. Deploys to the production server.
-
-**Deployment steps (in order):**
-1. SSH into the production server (using a deployment SSH key stored as a GitHub Actions secret)
-2. Pull the new image from the registry
-3. Run database migrations (one-off container that runs migrations and exits)
-4. Stop the old containers and start new ones with the new image
-5. Wait for health checks to pass
-6. If health checks fail, rollback (see below)
+Railway handles deployment automatically. On every push to main, Railway:
+1. Detects the code change
+2. Builds a new Docker image from the Dockerfile
+3. Runs the health check endpoint
+4. Routes traffic to the new deployment
+5. Keeps the previous deployment available for instant rollback
 
 **Design decisions:**
 - Deployment is automated — merging to main deploys to production. No manual "deploy" button.
-- Migrations run before the new app starts — the database is updated first, then the app. This means migrations must be backward-compatible (the old code must work with the new schema during the transition).
-- One deployment at a time — if a deployment is in progress and another merge happens, the second deployment queues until the first completes. Use GitHub Actions concurrency groups to enforce this.
+- Database migrations must run before the new app starts. Use a Railway deploy command or a pre-deploy script in your Dockerfile. Migrations must be backward-compatible (the old code must work with the new schema during the transition).
+- One deployment at a time — Railway queues deployments if multiple pushes happen in quick succession.
 
 ## Zero-Downtime Deployments
 
-The app should continue serving requests during deployment. Users should never see downtime for a code deployment.
+Railway performs rolling deployments by default — the new version is started and verified before the old version is stopped.
 
 **Design decisions:**
-- Use Docker Compose's rolling update strategy: start the new container, wait for it to be healthy, then stop the old container
-- Caddy continues routing to the old container until the new one passes its health check
+- Railway starts the new container, waits for the health check to pass, then routes traffic to it
 - The health check endpoint verifies the app can connect to the database and respond to requests — not just that the process is running
-- Graceful shutdown: when the old container receives a stop signal, it finishes processing in-flight requests (drain connections) before exiting. Set a stop timeout of 30 seconds.
+- Graceful shutdown: when the old container receives a stop signal, it finishes processing in-flight requests before exiting
 
 ## Rollback Strategy
 
 If a deployment breaks production, rollback to the previous version immediately.
 
 **Design decisions:**
-- Every deployed image is tagged with its commit SHA in the registry — you can always pull a specific previous version
-- Rollback is: SSH into the server, change the image tag in the compose file to the previous commit SHA, pull and restart
-- This should be a single command or script — not a multi-step manual process
-- After rollback, the bad commit is investigated and fixed in a new PR. Never re-deploy the same broken image.
+- Railway retains previous deployments — rollback is instant via the dashboard or CLI (`railway rollback`)
+- After rollback, the bad commit is investigated and fixed in a new PR. Never re-deploy the same broken code.
 - Database migrations complicate rollbacks — if the new schema is incompatible with the old code, you need a forward fix (new migration that reverts the schema change), not a rollback. This is why migrations must be backward-compatible.
 
-## Staging Environment
+## Preview Environments
+
+Railway creates a preview environment for every PR automatically (if enabled in project settings).
 
 **Design decisions:**
-- A staging server mirrors production (same Docker setup, same compose file, different `.env`)
-- Deploy to staging before production — staging runs the same CI/CD pipeline but triggers on a `staging` branch or a pre-release tag
-- Staging uses a separate database with seed data, not a copy of production data
-- Staging shares the same container registry — same images, different environment variables
-- Test every deployment on staging first, verify it works, then merge to main for production deployment
+- Each PR gets an isolated Railway environment with its own URL
+- Preview environments connect to Neon database branches — each PR gets its own database branch (covered in 03-database-hosting.md)
+- Preview environments use separate environment variables (test API keys)
+- Share preview URLs with stakeholders for review before merging
+- Preview environments are destroyed when the PR is closed
 
 ## Environment Variables
 
-- Production, staging, and local environments each have their own `.env` file
+- Production and preview environments each have their own variables set in Railway
+- Local development uses `.env` files
 - `.env` files are never committed to the repository — they contain secrets
 - `.env.example` is committed with all variable names (no values) so developers know what's needed
-- On the server, `.env` is managed manually or via a secrets manager — it's not part of the deployment pipeline
-- When adding a new environment variable, update `.env.example` in the same PR
+- When adding a new environment variable, update `.env.example` in the same PR and add it to Railway via dashboard or CLI
 
 ## Edge Cases
 
-- **Deployment fails mid-way** — if the new image fails to start (crash loop), the old containers are still running if using rolling updates. The deployment script should detect the health check failure and abort. If the old containers were already stopped, rollback immediately.
-- **Migration fails** — migrations run before the app starts. If a migration fails, the deployment aborts before any new containers start. The old containers keep running with the old schema. Fix the migration and redeploy.
-- **Two developers merge to main simultaneously** — the concurrency group ensures only one deployment runs at a time. The second deployment queues and runs after the first completes.
-- **Server is unreachable during deployment** — SSH connection fails. The deployment pipeline fails and alerts the team. The old version is still running (nothing was changed). Investigate the server.
+- **Deployment fails mid-way** — Railway detects the health check failure and keeps the old version running. The failed deployment is visible in the dashboard. Fix and redeploy.
+- **Migration fails** — if migrations run as part of the deploy process and fail, the deployment fails. The old version keeps running with the old schema. Fix the migration and redeploy.
+- **Two developers merge to main simultaneously** — Railway queues deployments. The second deployment runs after the first completes.
 - **Need to rollback a migration** — write a new migration that reverts the schema change and deploy it as a forward fix. Never manually alter the production database.
-- **Secrets rotated** — when rotating API keys or database credentials, update the `.env` file on the server and restart the affected services. No image rebuild needed.
-- **Docker registry is down** — can't pull the new image. Deployment fails, old version keeps running. Retry when the registry is back.
+- **Secrets rotated** — update the environment variable in Railway dashboard or CLI. Railway redeploys the service automatically when environment variables change.
+
+## Security Considerations
+
+- GitHub Actions secrets are not visible in logs, but a malicious or misconfigured workflow step can exfiltrate them. Only use trusted GitHub Actions (official or verified). Pin third-party actions to a specific commit SHA, not a tag (tags can be moved to point to malicious code).
+- Branch protection on main is a security control, not just a workflow convenience. Without it, anyone with write access can push directly to main and trigger a production deployment — bypassing code review and CI checks.
+- Treat the CI/CD configuration (`.github/workflows/`) as security-critical code — changes to workflow files should require the same review as changes to authentication or payment code.
+- Never echo, print, or log environment variables or secrets in CI steps. A common mistake is adding debug output that accidentally includes credentials in the build log.
+- Railway's API token (if used for CLI deployments) has production access. Store it as a GitHub Actions secret and treat it with the same care as database credentials.
 
 ## Implementation Checklist
 
 ### CI
-- [ ] GitHub Actions workflow for pull requests (test + lint + build)
-- [ ] GitHub Actions workflow for main branch (test + build + push + deploy)
+- [ ] GitHub Actions workflow for pull requests (test + lint + type check)
+- [ ] GitHub Actions workflow for main branch (test — Railway handles deployment)
 - [ ] Branch protection on main (require passing CI)
-- [ ] Docker layer caching in GitHub Actions
-- [ ] Images tagged with commit SHA and `latest`
+- [ ] Dependency caching in GitHub Actions
+- [ ] Third-party GitHub Actions pinned to commit SHA (not tag)
 
 ### CD
-- [ ] Deployment SSH key stored as GitHub Actions secret
-- [ ] Deployment script: pull image → run migrations → restart services → health check
-- [ ] Concurrency group prevents simultaneous deployments
-- [ ] Health check endpoint verifies database connectivity
-- [ ] Graceful shutdown with 30-second drain timeout
+- [ ] Railway project connected to GitHub repository
+- [ ] Auto-deploy from main branch enabled
+- [ ] Database migration strategy defined (pre-deploy or startup script)
+- [ ] Health check endpoint configured in Railway
+- [ ] Preview environments enabled for PRs
 
 ### Rollback
-- [ ] Rollback script/command that reverts to a specific commit SHA
-- [ ] Previous images retained in registry for rollback
-- [ ] Rollback tested at least once before launch
+- [ ] Rollback tested via Railway dashboard or CLI
+- [ ] Previous deployments retained
+- [ ] Team knows the rollback procedure
 
-### Staging
-- [ ] Staging server mirrors production setup
-- [ ] Staging deploys before production
-- [ ] Staging has separate database with seed data
+### Environment
+- [ ] Environment variables set in Railway (production and preview scopes)
 - [ ] `.env.example` committed and kept up to date
+- [ ] Neon database branch strategy aligned with Railway preview environments
 
 ## Common Mistakes
 
-- Manual deployments via SSH (error-prone, not reproducible, no audit trail)
-- No staging environment (deploying untested changes directly to production)
+- Manual deployments (error-prone, not reproducible, no audit trail)
 - Migrations that break backward compatibility (old code can't work with new schema during rolling update)
 - No health check in the deployment pipeline (deploying a broken image and not detecting it)
 - No rollback plan (scrambling to fix forward when rolling back would be faster)
 - Deploying on Friday afternoon (if something breaks, you're debugging on the weekend)
 - `.env` committed to the repository (secrets leaked to anyone with repo access)
-- Simultaneous deployments overwriting each other (no concurrency control)
 - Manual database changes outside of migrations (schema drift between environments)
+- Not aligning Railway preview environments with Neon database branches (preview app hits production database)

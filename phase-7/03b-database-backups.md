@@ -4,45 +4,58 @@
 
 ## What It Is
 
-How your database is backed up and how you recover from data loss. On Supabase, daily backups are automatic — but "automatic" doesn't mean "tested" or "sufficient."
+How your database is backed up and how you recover from data loss. On Neon, backups are continuous and automatic via its branch-based architecture — but "automatic" doesn't mean "tested" or "sufficient."
 
-## Supabase Automated Backups
+## Neon Automated Backups
 
-Supabase provides daily automated backups on all paid plans.
+Neon provides continuous backups through its copy-on-write branching architecture. Every change is durably stored, and you can create a branch from any point in time within the retention window.
 
-**What Supabase handles:**
-- Daily backups of the full database (all schemas, tables, RLS policies)
-- Point-in-Time Recovery (PITR) on Pro plan and above — recover to any specific second within the retention window
-- Backups stored in a separate region from the database
+**What Neon handles:**
+- Continuous WAL-based backup of every transaction (not just daily snapshots)
+- Point-in-Time Recovery (PITR) — restore to any specific second within the retention window
+- Branch creation from any point in time — create a new branch that reflects the database state at a specific moment
+- Backups stored redundantly within Neon's infrastructure
 
-**What Supabase does NOT handle:**
+**What Neon does NOT handle:**
 - Testing that restores actually work
-- Alerting you if a backup fails
-- Backing up Supabase Storage (file/object storage is separate — covered in 04-file-storage-backups.md)
-- Custom retention beyond the plan's default
+- External backups (if you want a copy outside Neon's infrastructure)
+- Alerting you proactively about data anomalies
+- Backing up Cloudflare R2 file storage (separate system — covered in 04-object-storage.md)
+
+**AI interface:** Neon CLI (`neonctl`), Neon MCP server.
 
 ## Backup Verification
 
 A backup you've never restored is not a backup. It's a hope.
 
 **Design decisions:**
-- Test a restore to a staging environment at least monthly
-- Document the restore process step-by-step so anyone on the team can execute it under pressure (during an incident, not the time to figure out the process)
-- The restore test verifies: data integrity (record counts match), RLS policies are intact, application functions correctly against the restored database
-- Set a calendar reminder for monthly restore tests — this will be forgotten without a recurring reminder
+- Test a restore by creating a branch from a past timestamp at least monthly
+- Verify the branch: record counts match expectations, RLS policies are intact, application functions correctly against the branch
+- Document the restore process step-by-step so anyone on the team can execute it under pressure
+- Set a calendar reminder for monthly restore tests
 
 ## Point-in-Time Recovery (PITR)
 
-PITR allows recovery to any specific second, not just the last daily backup. This matters when:
+Neon's branching IS PITR — you create a branch at any point in your retention window. This matters when:
 
-- A bug corrupts data at 14:23 — you can recover to 14:22, losing only one minute of data instead of up to 24 hours
-- An accidental bulk delete wipes a table — recover to just before the delete
-- A bad migration destroys data — recover to before the migration ran
+- A bug corrupts data at 14:23 — branch from 14:22, losing only one minute of data instead of hours
+- An accidental bulk delete wipes a table — branch from just before the delete
+- A bad migration destroys data — branch from before the migration ran
 
 **Design decisions:**
-- Enable PITR if your Supabase plan supports it (Pro plan and above)
-- Know the PITR retention window for your plan — this is how far back you can recover
-- PITR recovery creates a new database instance — you restore to a new project and then migrate your application to point to it
+- Know your plan's PITR retention window — Free plan retains 24 hours, Pro plan retains 7+ days
+- Upgrade to a plan with longer retention if your product handles critical data
+- Recovery creates a new branch — update the application's connection string to point to the recovered branch, or promote it to replace the original
+
+## External Backups
+
+For defense-in-depth (protecting against Neon itself being unavailable):
+
+**Design decisions:**
+- Run a weekly `pg_dump` from a Neon branch to an external location (Cloudflare R2 or local encrypted storage)
+- This is insurance against provider-level incidents, not your primary recovery strategy
+- Retain external backups for 30 days
+- The external backup job runs as a scheduled background job (covered in phase-3/10-background-jobs.md)
 
 ## Disaster Recovery Plan
 
@@ -51,52 +64,55 @@ Document what to do when the database is lost or corrupted.
 **The plan:**
 1. Detect the issue (monitoring alerts, user reports, or health check failure)
 2. Assess the scope (is it a single table, the entire database, or a configuration issue?)
-3. Decide the recovery method: PITR (for recent data loss) or daily backup restore (for older issues)
-4. Execute the restore to a new Supabase project
-5. Update the application's database connection to point to the restored database
-6. Verify the application works correctly against the restored database
+3. Decide the recovery method: Neon branch from a specific timestamp (for data loss) or external backup restore (for provider-level issues)
+4. Execute: create a Neon branch at the target timestamp, or restore from external backup to a new Neon project
+5. Update the application's database connection string to point to the recovered branch/project
+6. Verify the application works correctly against the restored data
 7. Notify affected users if data was lost (transparency builds trust)
-8. Post-mortem: what happened, how to prevent it, what to improve in the recovery process
+8. Post-mortem: what happened, how to prevent it, what to improve
 
 **Design decisions:**
 - Write the disaster recovery plan before you need it — not during the incident
 - Store the plan in the repository (not in a Google Doc that nobody can find at 3am)
 - The plan includes: who to contact, where credentials are stored, step-by-step commands for each recovery method
-- Run a disaster recovery drill at least once before launch — execute the full plan against a staging environment
+- Run a disaster recovery drill at least once before launch
 
 ## What to Test
 
-- Daily backups are running (verify in Supabase dashboard)
-- Restore from backup produces a functional database (monthly test)
-- Application works correctly against the restored database
-- PITR recovery to a specific timestamp works (if enabled)
+- Create a branch from a specific timestamp — verify data is correct at that point
+- Application works correctly against a restored branch
+- External backup (`pg_dump`) produces a valid backup file
+- External backup can be restored to a new Neon project
 - Disaster recovery plan is documented and accessible
 - At least one team member has executed a full restore
 
 ## Edge Cases
 
-- **Backup succeeds but restore fails** — Supabase backups can be corrupted in rare cases. Monthly restore tests catch this before you need the backup for real.
-- **PITR retention window has passed** — the data loss happened 3 days ago but PITR only retains 7 days. You have 4 days to notice and act. Monitoring and alerting help detect issues quickly.
-- **Database connection string changes after restore** — restoring to a new Supabase project means a new connection string. The application's environment variables must be updated. Document this in the disaster recovery plan.
-- **RLS policies missing after restore** — verify RLS policies are intact after every restore test. If they're missing, the restored database is a security risk.
-- **Partial data loss** — only one table is corrupted. PITR restores the entire database, not individual tables. You may need to restore to a temporary database and copy just the affected table back.
+- **PITR retention window has passed** — the data loss happened 3 days ago but your plan only retains 24 hours. Upgrade your plan's retention window. External backups are the fallback for incidents outside the PITR window.
+- **Connection string changes after restore** — pointing to a new Neon branch means a new connection string. Environment variables must be updated in Railway. Document this in the disaster recovery plan.
+- **RLS policies missing after restore** — Neon branches include all schema, RLS policies, and extensions. Verify after every restore test regardless.
+- **Partial data loss** — only one table is corrupted. Branch from a specific timestamp, then copy just the affected table's data back to the main branch using SQL. Neon branches make this straightforward since both branches are live simultaneously.
+- **Neon outage** — external backups are your insurance. Restore from the latest `pg_dump` to a different Postgres provider if Neon is down for an extended period.
 
 ## Implementation Checklist
 
-- [ ] Supabase paid plan active (daily backups enabled)
-- [ ] PITR enabled (if Pro plan or above)
-- [ ] Restore tested at least once (monthly recurring reminder set)
+- [ ] Neon plan with sufficient PITR retention (Pro for 7+ days)
+- [ ] Branch restore tested at least once (monthly recurring reminder set)
 - [ ] Restore process documented step-by-step in the repository
+- [ ] External backup job running weekly (`pg_dump` to R2 or encrypted storage)
+- [ ] External backup restore tested at least once
 - [ ] Disaster recovery plan written and stored in the repository
-- [ ] Disaster recovery drill executed against staging
+- [ ] Disaster recovery drill executed
 - [ ] At least one team member has performed a full restore
-- [ ] Monitoring detects database unreachability (health check — 02-health-check.md)
+- [ ] Monitoring detects database unreachability (health check — 09-health-check.md)
 
 ## Common Mistakes
 
-- Assuming Supabase backups work without ever testing a restore (discover it's broken when you need it most)
+- Assuming Neon backups work without ever testing a branch restore
 - No documented restore process (figuring out the steps during a 3am incident)
-- PITR not enabled (losing up to 24 hours of data on every incident instead of seconds)
-- Disaster recovery plan in someone's head, not written down (that person is on vacation when the incident happens)
+- PITR retention window too short for your needs (24 hours on Free plan may not be enough)
+- No external backup strategy (single point of failure on Neon)
+- Disaster recovery plan in someone's head, not written down
 - Never running a drill (the first time anyone executes the plan is during a real emergency)
 - Not notifying users about data loss (they find out on their own and lose trust)
+- Forgetting to update connection strings after restore (app still points to the corrupted branch)

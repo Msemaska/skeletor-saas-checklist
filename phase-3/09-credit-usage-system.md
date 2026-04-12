@@ -55,14 +55,50 @@ Separate the limit definition from the current count. They change for different 
 - Never store limits on the workspace record — the workspace references its plan, and the plan defines the limits
 - Each usage record tracks which workspace it belongs to, what type of usage, the current count, and the billing period window (start and end timestamps)
 
+## Credit Balance & Top-Up
+
+For products with usage-based or hybrid pricing (subscription + top-up), usage is tracked as a credit balance rather than just a counter against a hard limit.
+
+### Two Models
+
+**Usage-based only (credits):**
+- Users purchase credit packs ($10 for 500 credits, $20 for 1,200, etc.) — larger packs offer a discount
+- Every metered action deducts credits from the balance
+- When credits run out, actions are blocked until the user tops up
+- Auto-top-up: user pre-authorizes a credit pack purchase when balance drops below a threshold (e.g., "auto-buy 500 credits when balance falls below 50"). This prevents workflow interruption for active users.
+
+**Hybrid (subscription + top-up):**
+- The subscription plan includes a monthly credit allowance (e.g., Pro: 1,000 credits/month)
+- Credits from the subscription allowance reset each billing period
+- If the user exhausts their subscription allowance mid-period, they can purchase additional credits (top-up) to continue immediately — no need to wait for the next period or upgrade their plan
+- Auto-top-up works the same: pre-authorize a purchase when balance hits zero (or a threshold)
+- Top-up credits are separate from subscription credits — they do not expire at period end (or expire after 12 months, decide and be explicit)
+
+### Credit Balance Design Decisions
+
+- Track two balances per workspace: **subscription credits** (reset each period) and **purchased credits** (persistent until used or expired)
+- Deduct from subscription credits first, then purchased credits — this way the subscription allowance is always consumed before dipping into purchased credits
+- Credit pack purchases go through Stripe as one-time payments (not subscriptions)
+- Auto-top-up is a workspace setting: enabled/disabled, threshold amount, and credit pack size to purchase
+- When auto-top-up triggers, charge the user's default payment method via Stripe. If the charge fails, disable auto-top-up and notify the user.
+- Show the credit balance prominently in the app header or sidebar — users need to see this at all times, not buried in settings
+- Low balance warning: notify at 20% remaining (both in-app and email) so the user can top up before running out
+
+### Credit Display
+
+- Show: current balance, subscription allowance used/total, purchased credits remaining
+- For hybrid: "450 of 1,000 subscription credits used · 200 purchased credits remaining"
+- Usage history: show credit consumption per day/week so users can predict when they'll run out
+
 ## Enforcement Strategy
 
-Use hard limits. When a workspace hits its limit, block the action and show a clear upgrade prompt.
+Use hard limits. When a workspace hits its limit (or runs out of credits), block the action and show a clear upgrade or top-up prompt.
 
 **How enforcement works:**
-- Before every metered action, query the workspace's current usage and compare against the plan's limit
-- If at or over the limit, return an error with a clear message: "You've reached your limit of X. Upgrade to [next plan] for more."
-- The error should include: what limit was hit, the current count, the plan limit, and a link to the upgrade page
+- Before every metered action, check the workspace's available capacity: plan limit minus current usage (for hard-limit models) or remaining credit balance (for credit-based models)
+- If no capacity remains, return an error with a clear message: "You've reached your limit of X. Upgrade to [next plan] for more." or "You've run out of credits. Top up to continue."
+- The error should include: what limit was hit (or credits depleted), the current count, the plan limit or credit balance, and a link to the upgrade/top-up page
+- For credit-based models: if auto-top-up is enabled and the balance is below the threshold, trigger the auto-top-up purchase before blocking the action
 
 **Where enforcement runs:**
 - In the service layer, inside the service function for the metered action — not in middleware, not in the frontend
@@ -168,6 +204,12 @@ Two requests can check the limit simultaneously, both see "under limit," and bot
 - **Stripe webhook delay on period reset** — the billing period has ended but the webhook hasn't arrived yet. The check-before-increment logic should compare the current timestamp against the usage record's period_end. If the period has ended, reset the counter regardless of whether the webhook has arrived.
 - **Downgrade blocked by seat count** — the workspace owner tries to downgrade but has too many members. Show a clear message listing how many members need to be removed and which plan they're downgrading to.
 - **Admin/system operations that bypass limits** — system context operations (migrations, seeding, bulk updates) should not increment usage counters. Usage only tracks user-initiated actions.
+- **Auto-top-up payment fails** — Stripe charge is declined. Disable auto-top-up for the workspace, notify the user via email and in-app, and block further actions until they manually top up or fix their payment method. Never retry silently — the user needs to know.
+- **Subscription credits reset but purchased credits remain** — on billing period reset, zero only the subscription credit counter. Purchased credits carry over. The deduction order (subscription first, then purchased) ensures purchased credits are a true safety net.
+- **User tops up right before period reset** — purchased credits should NOT be wiped by the period reset. Only subscription allowance resets. This is why the two balances are tracked separately.
+- **Refund on unused credits** — decide upfront: are credit purchases refundable? Recommended: no refunds on credits, but credits never expire (or expire after 12 months). Be explicit in the terms of service.
+- **Credit cost varies per action** — some actions cost 1 credit, others cost 10 (e.g., simple query vs complex generation). Display the credit cost before the user confirms the action so there are no surprises. Show "This will use X credits" in the confirmation step.
+- **Negative credit balance** — should never happen if enforcement runs before execution. If it does (race condition, bug), block further actions and alert the engineering team. Never charge the user for negative balance — it's your bug.
 
 ## Implementation Checklist
 
@@ -194,6 +236,20 @@ Two requests can check the limit simultaneously, both see "under limit," and bot
 - [ ] Usage counters reset on Stripe `invoice.paid` webhook for new billing period
 - [ ] Period boundary check before increment (reset if period has ended regardless of webhook)
 - [ ] Weekly reconciliation job corrects counter drift
+
+### Credits & Top-Up (if applicable)
+- [ ] Two separate balances tracked: subscription credits and purchased credits
+- [ ] Deduction order: subscription credits first, then purchased credits
+- [ ] Credit pack products created in Stripe (one-time payments)
+- [ ] Top-up purchase flow working (select pack → Stripe checkout → credits added)
+- [ ] Auto-top-up setting: enable/disable, threshold, pack size
+- [ ] Auto-top-up triggers Stripe charge on default payment method when balance drops below threshold
+- [ ] Auto-top-up disabled and user notified on payment failure
+- [ ] Credit balance displayed prominently in app UI
+- [ ] Low balance warning at 20% remaining (in-app + email notification)
+- [ ] Usage history showing credit consumption over time
+- [ ] Subscription credits reset on period boundary, purchased credits preserved
+- [ ] Credit cost per action displayed before confirmation (if variable cost)
 
 ### Plan Changes
 - [ ] Upgrade: new limits take effect immediately, counts carry over

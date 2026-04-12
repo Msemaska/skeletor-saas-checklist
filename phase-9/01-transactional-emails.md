@@ -10,6 +10,8 @@ System-generated emails triggered by user actions or system events. These are no
 
 Use Resend for transactional email delivery. Use React Email for building email templates.
 
+**AI interface:** Resend MCP.
+
 ## Template System
 
 All emails share a common layout — header, content area, footer. Design the layout once, reuse it for every email.

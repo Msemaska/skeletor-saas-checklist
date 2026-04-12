@@ -72,7 +72,7 @@ Reference: phase-3/03-auth.md (Session Management)
 
 ## 5. API & Webhook Security
 
-Reference: phase-9/02-stripe-architecture.md, phase-3/04-data-access.md
+Reference: phase-8/02-stripe-architecture.md, phase-3/04-data-access.md
 
 **Verify:**
 - [ ] Stripe webhook signatures are verified on every webhook request
@@ -84,7 +84,7 @@ Reference: phase-9/02-stripe-architecture.md, phase-3/04-data-access.md
 
 ## 6. Security Headers
 
-Reference: phase-8/05-security-headers.md
+Reference: phase-7/05-security-headers.md
 
 **Verify:**
 - [ ] Strict-Transport-Security header present (max-age=31536000, includeSubDomains, preload)
@@ -109,7 +109,7 @@ Reference: phase-7/07-local-development.md (Environment Variables)
 
 ## 8. Dependencies
 
-Reference: phase-8/06-dependency-scanning.md
+Reference: phase-7/06-dependency-scanning.md
 
 **Verify:**
 - [ ] `npm audit` shows no critical or high severity vulnerabilities
@@ -118,9 +118,9 @@ Reference: phase-8/06-dependency-scanning.md
 
 ## 9. Infrastructure
 
-Reference: phase-8/01-hosting-deployment.md (managed), phase-7/03-server-provisioning.md (self-hosted)
+Reference: phase-7/03-server-provisioning.md
 
-**Managed (Vercel):**
+**Railway:**
 - [ ] Environment variable scoping is correct (production keys not in preview deployments)
 - [ ] Spending limit configured
 

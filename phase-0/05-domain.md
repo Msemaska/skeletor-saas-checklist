@@ -47,7 +47,7 @@ Your product's home on the internet. The domain affects brand perception, SEO, e
 
 Immediately after purchase:
 - Point nameservers to Cloudflare (automatic if bought there)
-- Don't add any records yet — those come in later phases (Vercel, email, etc.)
+- Don't add any records yet — those come in later phases (Railway, email, etc.)
 
 
 Don't go overboard — 1-3 extra domains max.

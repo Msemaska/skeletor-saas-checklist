@@ -6,6 +6,8 @@
 
 How Stripe connects to your application — webhook handling, subscription lifecycle, data flow between Stripe and your database, and the state machine that governs billing state. This is the design doc. Testing is covered in 03-stripe-sandbox.md, going live is covered in 04-stripe-production.md.
 
+**AI interface:** Stripe CLI (`stripe`), Stripe MCP server.
+
 ## Data Ownership
 
 Stripe is the source of truth for billing. Your database stores only references and cached status.

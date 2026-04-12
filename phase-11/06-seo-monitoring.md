@@ -64,7 +64,7 @@ How your pages appear in search results and how users interact with them.
 
 ### Core Web Vitals
 
-Google Search Console reports Core Web Vitals from real user data, complementing the synthetic data from Vercel Speed Insights / Sentry Performance (phase-11/04-performance-monitoring.md).
+Google Search Console reports Core Web Vitals from real user data, complementing the synthetic data from Sentry Performance (phase-10/04-performance-monitoring.md).
 
 **Design decisions:**
 - Check the Core Web Vitals report monthly

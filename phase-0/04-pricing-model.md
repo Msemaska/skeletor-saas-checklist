@@ -30,16 +30,20 @@ How you charge for your product. This decision affects everything — feature ga
 - Best when: you serve different customer segments with different needs
 - Most common SaaS model
 
-### Usage-Based
-- Pay for what you use (API calls, storage, messages sent)
-- Best when: value scales directly with usage
-- Risk: unpredictable revenue, customers worry about surprise bills
-- Examples: Twilio, Vercel, AWS
+### Usage-Based (Credits / Top-Up)
+- Pay for what you use via a credit balance that gets consumed per action
+- Users purchase credits in advance (top-up) or enable auto-top-up when balance runs low
+- Best when: value scales directly with usage and customers want full control over spend
+- Risk: lower predictable revenue, requires clear balance visibility so users don't run out mid-task
+- Examples: Twilio, AWS
 
-### Hybrid
-- Base subscription + usage overage
-- Best when: you want predictable revenue but value scales with usage
-- Examples: Most API companies (base plan + per-call overage)
+### Hybrid (Subscription + Top-Up)
+- Base subscription includes a monthly usage allowance (e.g., "Pro plan: 1,000 credits/month")
+- If the allowance runs out before the period ends, the user can purchase additional credits (top-up) to continue using the product immediately
+- Auto-top-up option: user pre-authorizes automatic credit purchases when balance drops below a threshold — no interruption to their workflow
+- Best when: you want predictable recurring revenue but value also scales with heavy usage. Users get a baseline included in their plan, power users pay more without being forced to a higher tier.
+- This is the Anthropic model — subscription gives you a monthly allowance, credits top up when you exceed it
+- Examples: Anthropic (Claude), OpenAI (ChatGPT Plus + usage), most AI/API companies
 
 ## Process
 
@@ -51,7 +55,8 @@ How you charge for your product. This decision affects everything — feature ga
 | Product has viral/sharing potential | Freemium |
 | Product is simple, one-size-fits-all | Flat rate |
 | Different customer segments exist | Tiered |
-| Value directly correlates to usage | Usage-based |
+| Value directly correlates to usage | Usage-based (credits) |
+| Predictable base + heavy users pay more | Hybrid (subscription + top-up) |
 
 ### Step 2: Define Your Tiers (if tiered)
 
@@ -102,7 +107,11 @@ Decisions you need to make now (they affect Stripe integration):
 - Proration on mid-cycle upgrade/downgrade?
 - Refund policy? (no refunds, prorated, 30-day money-back)
 - Per-seat pricing or per-account?
-- Usage overage handling? (hard limit, soft limit with overage charge, throttle)
+- Usage overage handling? (hard limit until top-up, auto-top-up, throttle)
+- If credits/top-up: credit pack sizes and prices? (e.g., $10 for 500 credits, $20 for 1,200)
+- Auto-top-up available? (pre-authorized purchase when balance drops below threshold)
+- Do unused credits roll over to next period or expire?
+- Minimum top-up amount?
 
 ### Step 5: Plan the Pricing Page
 
@@ -121,6 +130,7 @@ Essential elements:
 - [ ] Annual vs monthly pricing decided
 - [ ] Free trial or free tier parameters set
 - [ ] Billing edge cases decided (failed payments, proration, refunds)
+- [ ] If usage-based or hybrid: credit pack sizes, auto-top-up rules, and rollover policy decided
 - [ ] Competitor pricing benchmarked
 - [ ] Pricing page wireframe/content drafted
 

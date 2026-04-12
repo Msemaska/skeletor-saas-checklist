@@ -4,115 +4,130 @@
 
 ## What It Is
 
-Running and managing your own PostgreSQL instance instead of using a managed service like Supabase. This covers the database container, connection pooling, backup strategy, and disaster recovery.
+Your managed PostgreSQL database. Neon provides serverless Postgres with branching, connection pooling, autoscaling, and automatic backups — no database containers to manage.
+
+**AI interface:** Neon CLI (`neonctl`), Neon MCP server.
+
+## Provider
+
+Use Neon for all database hosting. Serverless Postgres with built-in connection pooling, database branching for preview environments, and point-in-time recovery. Data stays in standard Postgres — no proprietary extensions or lock-in beyond the hosting layer.
 
 ## Architecture
 
 ```
-App Container
+App (Railway)
   │
   ▼
-PgBouncer (connection pooler)
+Neon Connection Pooler (built-in)
   │
   ▼
-PostgreSQL (database)
+Neon Postgres (serverless)
   │
   ▼
-Named Volume (persistent data)
+Neon Storage (automatic, durable)
 ```
 
-The app never connects to PostgreSQL directly in production. PgBouncer sits between them, managing a pool of connections.
+The app connects to Neon's pooled connection endpoint. No separate PgBouncer or connection pooler to manage.
 
-## PostgreSQL Container
+## Connection Pooling
+
+Neon provides built-in connection pooling via its proxy layer.
 
 **Design decisions:**
-- Use the official PostgreSQL Alpine image, pinned to the major version (e.g., postgres:16-alpine)
-- Data stored on a named Docker volume — never a bind mount for production data
-- Listen only on the Docker network — never expose PostgreSQL's port (5432) to the internet
-- Set `max_connections` at the PostgreSQL level to a conservative number (100). PgBouncer handles the connection multiplexing.
+- Use the pooled connection string (contains `-pooler` in the hostname) for all application connections
+- The pooled endpoint uses transaction-mode pooling — connections are returned to the pool after each transaction
+- Use the direct (non-pooled) connection string only for migrations and schema changes that require session-level features
+- The Neon serverless driver (`@neondatabase/serverless`) is optimized for serverless environments — use it for all database access from the application
+
+## Database Branching
+
+Neon's killer feature for development workflows. A branch is a copy-on-write clone of your database at a specific point in time.
+
+**Design decisions:**
+- **Production:** the `main` branch — all production traffic hits this branch
+- **Preview environments:** each Railway PR environment connects to its own Neon branch — created automatically or via CI. Neon Auth data branches with the database, so preview environments have working auth.
+- **Development:** developers can create personal branches from `main` for local development
+- Branches are cheap (copy-on-write, no full data duplication) — create liberally, delete when done
+- Align branch lifecycle with PR lifecycle — create a branch when a PR is opened, delete it when the PR is merged or closed
+
+## Extensions
+
+**Design decisions:**
 - Enable `pg_stat_statements` for query performance monitoring
 - Enable `pg_trgm` for fuzzy search (covered in phase-3/08-search.md)
-- Set timezone to UTC
-
-## Connection Pooling (PgBouncer)
-
-PgBouncer maintains a pool of connections to PostgreSQL and multiplexes application requests across them.
-
-**Design decisions:**
-- PgBouncer runs as a separate container in the Docker Compose stack
-- Pool mode: transaction pooling — connections are returned to the pool after each transaction. This is the most efficient mode for web applications.
-- `default_pool_size`: 20 (number of connections PgBouncer maintains to PostgreSQL per database/user pair)
-- `max_client_conn`: 200 (maximum simultaneous client connections PgBouncer accepts)
-- The app connects to PgBouncer's port, not PostgreSQL's port directly
-- PgBouncer is transparent to the application — the connection string just points to PgBouncer instead of PostgreSQL
-
-## Backup Strategy
-
-Backups are the single most important operational concern. Without tested backups, a disk failure means total data loss.
-
-**Design decisions:**
-- **Daily automated backups** using `pg_dump` via a cron job (or a dedicated backup container)
-- Backups stored offsite — not on the same server as the database. Push to Cloudflare R2, AWS S3, or another storage provider.
-- Retain: daily backups for 7 days, weekly backups for 4 weeks, monthly backups for 12 months
-- Backup file naming: `backup-YYYY-MM-DD-HHmmss.sql.gz` (compressed with gzip)
-- **Test restores regularly** — a backup you've never restored is not a backup. Test a restore to a local or staging environment at least monthly.
-- For databases with high write volume or where point-in-time recovery matters, also enable WAL archiving (continuous archiving of write-ahead logs). This allows recovery to any specific point in time, not just the last daily backup.
-
-**What to back up:**
-- The full database (all schemas, all tables, roles, and extensions)
-- Do NOT back up only specific tables — partial backups create restoration headaches with foreign key dependencies
+- Neon supports most standard Postgres extensions — enable them via SQL (`CREATE EXTENSION`)
+- Extensions are per-branch — enable them in migrations so they're consistent across all branches
 
 ## Migrations
 
-Schema changes are applied via migration files, same as with a managed database. The only difference is how they're executed.
+Schema changes are applied via migration files, same as with any Postgres host.
 
 **Design decisions:**
-- Migrations run as part of the deployment process — after pulling the new image, before starting the new containers
-- Use a one-off container or an init script that runs migrations and exits before the app starts accepting traffic
-- Never run migrations manually by SSH-ing into the server and pasting SQL — migrations must be version-controlled and reproducible
+- Migrations run as part of the deployment process — before the new app version starts accepting traffic
+- Use the direct (non-pooled) connection string for migrations (some migrations need session-level features)
+- Never run migrations manually — migrations must be version-controlled and reproducible
 - Migration strategy (always roll forward, never edit deployed migrations) is covered in phase-3/01-database-schema.md
+- Test migrations on a Neon branch first — branch from production, apply the migration, verify it works, then apply to production
+
+## Backups & Disaster Recovery
+
+Covered in detail in phase-7/03b-database-backups.md. Summary:
+- Neon provides continuous backups via its copy-on-write architecture
+- Point-in-time recovery by creating a branch at any timestamp within the retention window
+- External `pg_dump` backups for defense-in-depth (weekly to Cloudflare R2)
 
 ## Monitoring
 
-- Monitor disk usage — databases grow. Set an alert when disk usage exceeds 80%.
-- Monitor connection count — if PgBouncer's `max_client_conn` is consistently near the limit, increase it or investigate connection leaks
-- Monitor query performance — enable `pg_stat_statements` and review the slowest queries weekly
-- Monitor replication lag (if using replication) — high lag means the replica is falling behind and reads may be stale
+- Monitor query performance via `pg_stat_statements` — review slowest queries weekly
+- Monitor connection count — if approaching the pooler limit, investigate connection leaks or scale the plan
+- Neon dashboard shows compute usage, storage, and connection metrics
+- Set up alerts for database unreachability via the health check endpoint (covered in 09-health-check.md)
+
+## Scaling
+
+**Design decisions:**
+- Neon autoscales compute based on load — no manual scaling needed for most workloads
+- Configure autoscaling bounds (min and max compute units) to control costs
+- For high-traffic applications, Neon's read replicas can offload read queries — but start without replicas and add them only when measured latency or query volume demands it
 
 ## Edge Cases
 
-- **Database container crashes and restarts** — named volumes persist. PostgreSQL recovers using its write-ahead log (WAL). Data is safe as long as the volume is intact.
-- **Disk fills up** — PostgreSQL stops accepting writes and may crash. Monitor disk usage and set alerts at 80%. The biggest disk consumers are WAL files, pg_stat_statements data, and uncommitted temporary files.
-- **Connection leak** — the app opens connections but never closes them. PgBouncer mitigates this by timing out idle connections (`server_idle_timeout`), but the root cause must be fixed in the application. Monitor connection counts.
-- **Backup fails silently** — the backup cron job errors but nobody notices. Send the backup job's success/failure status to the monitoring system. If a backup hasn't completed in 24 hours, alert.
-- **Restore to a different PostgreSQL version** — `pg_dump` output is forward-compatible but not always backward-compatible. Always restore to the same major version or newer.
-- **Need to upgrade PostgreSQL major version** — dump the database on the old version, provision a new container with the new version, restore the dump. This requires downtime. Schedule during a maintenance window.
-- **Corruption** — rare with modern PostgreSQL, but possible after a crash without proper shutdown. Enable `data_checksums` at database initialization to detect corruption early. Graceful shutdown handling (covered in 07-local-development.md) prevents most corruption.
+- **Database branch out of sync** — a long-running PR's branch falls behind production. Reset the branch from the current production state before final testing.
+- **Connection limit reached** — Neon's pooler has limits per plan. If the app creates too many connections, requests fail. Use the pooled endpoint and ensure the app doesn't hold connections open unnecessarily.
+- **Migration fails on production but passed on branch** — the branch was created before recent production data changes. Always branch from the latest production state when testing migrations.
+- **Neon outage** — external backups (weekly `pg_dump` to R2) are the insurance policy. Restore to a different Postgres provider if needed.
+- **Autoscaling causes cold starts** — Neon's serverless compute can scale to zero. For production, set a minimum compute size to avoid cold start latency on the first request after idle.
+- **Branch accumulation** — old branches from closed PRs accumulate. Automate branch cleanup in CI (delete the Neon branch when the PR is closed) or run periodic cleanup.
+
+## Security Considerations
+
+- The application should connect with the default role provided by Neon. For additional isolation, create a limited-privilege role for the application that only has permissions on application tables.
+- Connection strings contain credentials. Never log them, include them in error reports, or expose them to the client. Store them in Railway environment variables and `.env` for local development.
+- Neon encrypts data at rest and in transit. The connection uses SSL by default — never disable SSL in the connection string.
+- Neon branches inherit the parent's data, including user data. Be aware that preview branches contain production data — if this is a concern, use seed data instead of branching from production.
+- External backup files (`pg_dump`) contain the entire database. Encrypt before storing offsite.
 
 ## Implementation Checklist
 
-- [ ] PostgreSQL container with pinned major version (Alpine image)
-- [ ] Data on named Docker volume (not bind mount)
-- [ ] PostgreSQL port not exposed to the internet (Docker network only)
-- [ ] `max_connections` set conservatively (100)
+- [ ] Neon project created in the correct region (matching Railway deployment region)
+- [ ] Pooled connection string used for all application connections
+- [ ] Direct connection string used for migrations only
+- [ ] `@neondatabase/serverless` driver installed and configured
 - [ ] `pg_stat_statements` enabled
 - [ ] `pg_trgm` enabled
-- [ ] PgBouncer container configured with transaction pooling
-- [ ] App connects to PgBouncer, not PostgreSQL directly
-- [ ] Daily automated backups via `pg_dump` (compressed, stored offsite)
-- [ ] Backup retention: 7 daily, 4 weekly, 12 monthly
-- [ ] Backup restore tested at least monthly
-- [ ] Disk usage alerts at 80%
-- [ ] Connection count monitoring
-- [ ] Migrations run as part of deployment (automated, not manual)
+- [ ] Neon Auth configured (covered in phase-3/03-auth.md)
+- [ ] Database branching strategy aligned with Railway preview environments
+- [ ] Branch cleanup automated (delete branch when PR closes)
+- [ ] Autoscaling bounds configured (min compute to avoid cold starts in production)
+- [ ] External backup strategy defined (weekly `pg_dump` to R2)
+- [ ] Backup restore tested at least once
 
 ## Common Mistakes
 
-- Exposing PostgreSQL port to the internet (direct database access from anywhere)
-- No connection pooling (app opens 200 direct connections, PostgreSQL runs out of memory)
-- Backups on the same server as the database (disk failure loses both the database and the backups)
-- Never testing backup restores (discover the backup is corrupted when you actually need it)
-- Bind mounts instead of named volumes (accidentally delete the host directory, lose all data)
-- Running migrations manually via SSH (not reproducible, not tracked, can't be rolled back)
-- No disk usage monitoring (database grows until the disk fills, PostgreSQL crashes)
-- Upgrading PostgreSQL in-place (major version upgrades require dump and restore, not just pulling a new image)
+- Using the direct connection string for application traffic (bypasses connection pooling, hits connection limits)
+- Not setting a minimum compute size in production (cold starts on first request after idle)
+- Branches accumulating from old PRs (storage costs and clutter)
+- Running migrations against the pooled endpoint (session-level features don't work in transaction-mode pooling)
+- Not testing migrations on a branch first (applying untested schema changes to production)
+- Ignoring autoscaling costs (set max compute bounds to prevent surprise bills)
+- Branching from production for previews when the data is sensitive (preview branches contain real user data)

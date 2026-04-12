@@ -12,6 +12,7 @@ The set of tokens, components, and patterns that ensure your entire app looks an
 
 - **Tailwind v4** — CSS-first config, `@theme` directive for design tokens, native CSS variables
 - **Shadcn** — unstyled Radix primitives, copied into your codebase, fully customizable
+  **AI interface:** Shadcn CLI (`shadcn`).
 - **class-variance-authority (CVA)** — variant management for component styles
 - **tailwind-merge** — deduplicates Tailwind classes at runtime
 - **clsx** — conditional class joining

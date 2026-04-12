@@ -30,7 +30,7 @@ Some reads must happen on the client — real-time updates, polling, infinite sc
 | Scenario | Method |
 |---|---|
 | Page load data | Server Component |
-| Data that changes in real-time | Client-side with TanStack Query (or Supabase Realtime subscriptions) |
+| Data that changes in real-time | Client-side with TanStack Query (polling interval) |
 | Infinite scroll / pagination | Client-side with TanStack Query |
 | Data after a user interaction (filter, search) | Client-side with TanStack Query |
 | Static reference data (plans, categories) | Server Component, cached |
@@ -177,13 +177,9 @@ Every mutation must show a pending state to the user. No silent background opera
 
 ## Direct Database Calls from the Client
 
-Some database providers offer client-side SDKs that let the browser query the database directly, with RLS enforcing access control.
+**Don't do it.** All reads go through Server Components. All writes go through Server Actions or API routes. The Neon serverless driver is a server-side tool — it runs in Server Components, Server Actions, and API routes, not in the browser.
 
-**The default is: don't do it.** Route through Server Components for reads and Server Actions for writes.
-
-**The one exception:** real-time subscriptions. Listening for live database changes (new messages, status updates, presence) requires a persistent client-side connection. This is the only case where a direct client-to-database connection is acceptable.
-
-Everything else — reads, writes, mutations — goes through the server (Server Components, Server Actions, or API routes) via the service layer.
+For real-time data updates, use TanStack Query with a polling interval appropriate to the data type (see the "When to use which" table above). For real-time in-app notifications, Novu's inbox SDK handles its own websocket connection — this is the only client-side real-time channel in the stack.
 
 ## Database Functions vs Application Code
 
@@ -262,8 +258,9 @@ Some logic can live in the database (triggers, functions) instead of application
 - [ ] Optimistic rollback handled gracefully on server error
 
 ### Data Access Rules
-- [ ] No direct database writes from the client (all mutations via Server Actions)
-- [ ] Direct client reads limited to real-time subscriptions only
+- [ ] No direct database calls from the client (all reads via Server Components, all mutations via Server Actions)
+- [ ] Real-time data handled via TanStack Query polling (not client-side database connections)
+- [ ] Real-time notifications handled via Novu inbox SDK (not custom websockets)
 - [ ] Database triggers in place for updated_at, audit logs, and cascade operations
 - [ ] System context only used in backend code (webhooks, cron jobs, admin operations)
 

@@ -2,9 +2,15 @@
 
 ---
 
+## What It Is
+
+How your application is deployed, served, and scaled in production. Railway handles containers, networking, SSL, preview environments, and rollback — you bring Dockerfiles and a GitHub repo.
+
 ## Provider
 
-Use Vercel for hosting. It handles deployment, CDN, SSL, preview environments, and rollback with zero infrastructure management.
+Use Railway for hosting. It deploys Docker containers from your repo, handles SSL and networking, provides preview environments per PR, and supports instant rollback. Unlike fully managed platforms, Railway still accepts raw containers — you control the Dockerfile, the build process, and the runtime environment.
+
+**AI interface:** Railway CLI (`railway`), Railway MCP server (`railway-mcp-server`).
 
 ## Architecture
 
@@ -12,124 +18,130 @@ Use Vercel for hosting. It handles deployment, CDN, SSL, preview environments, a
 GitHub Repository
   │ (push to main)
   ▼
-Vercel Build
-  │ (build Next.js app)
+Railway Build
+  │ (build from Dockerfile or Nixpacks)
   ▼
-Vercel Edge Network
-  │ (CDN, SSL, routing)
+Railway Network
+  │ (private networking, public domains, SSL)
   ▼
 Users
 ```
 
-Every push to main triggers an automatic deployment. No CI/CD pipeline to configure — Vercel IS the pipeline.
+Every push to main triggers an automatic deployment. Railway builds the Docker image, deploys it, and routes traffic — no CI/CD pipeline for deployment needed (GitHub Actions handles tests and linting, Railway handles deployment).
 
 ## Deployment
 
 **Design decisions:**
-- Connect the GitHub repository to Vercel — deployments trigger automatically on push to main
+- Connect the GitHub repository to Railway — deployments trigger automatically on push to main
 - Every push to main is a production deployment
-- Every pull request gets a preview deployment with a unique URL — use this for QA, design review, and stakeholder demos
-- Build settings: Next.js is auto-detected. No custom build configuration needed.
-- Environment variables are set in the Vercel dashboard, not in the repository
+- Railway builds from your Dockerfile by default — if no Dockerfile exists, it uses Nixpacks (auto-detected). Prefer explicit Dockerfiles for control.
+- Environment variables are set in the Railway dashboard or via CLI, not in the repository
+- Each service (app, worker) is a separate Railway service within the same project
 
-## CDN & SSL
+## SSL & Networking
 
-Vercel handles both automatically:
+Railway handles both automatically:
 
-- All traffic is served through Vercel's Edge Network (global CDN)
-- SSL certificates are provisioned and renewed automatically for your custom domain
+- All traffic is served over HTTPS — SSL certificates are provisioned and renewed automatically
 - HTTP is automatically redirected to HTTPS
-- Static assets are cached at the edge with content-based hashing (immutable, long TTL)
-- Server-rendered pages are served from the nearest edge region
+- Private networking between services (app ↔ worker ↔ database) uses Railway's internal network — no ports exposed to the internet
+- Static assets are served through Railway's edge — for global CDN, put Cloudflare in front
 
-No configuration needed. This works out of the box when you connect a custom domain.
+No reverse proxy needed. Railway handles HTTPS termination, routing, and internal networking.
 
 ## Custom Domain
 
 **Design decisions:**
-- Add your custom domain in the Vercel dashboard
-- Point your domain's DNS to Vercel using a CNAME record (Vercel provides the value)
-- Add both the root domain (yourdomain.com) and www subdomain — Vercel redirects www to root
-- SSL is provisioned automatically once DNS resolves to Vercel
+- Add your custom domain in the Railway dashboard or via CLI
+- Point your domain's DNS to Railway using a CNAME record (Railway provides the value)
+- Add both the root domain (yourdomain.com) and www subdomain — configure a redirect from www to root
+- SSL is provisioned automatically once DNS resolves to Railway
+- For global CDN performance, proxy through Cloudflare (set Cloudflare to proxy mode, CNAME points to Railway)
 
-## Preview Deployments (Staging)
+## Preview Environments
 
-Every pull request gets its own preview deployment — a unique URL running the PR's code against separate preview environment variables.
+Every pull request gets its own preview environment — a unique URL running the PR's code with separate environment variables.
 
 **Design decisions:**
-- Use preview deployments as the staging environment — no need for a separate staging server
-- Configure separate environment variables for previews (test API keys for Stripe, Resend, etc.)
+- Enable PR environments in Railway project settings — every PR gets an isolated deployment
+- Configure separate environment variables for preview environments (test API keys for Stripe, Resend, etc.)
+- Preview environments connect to Neon database branches (covered in 03-database-hosting.md) — each PR gets its own database branch with auth data included (Neon Auth branches with the database)
 - Share preview URLs with stakeholders for review before merging
-- Preview deployments are automatically deleted when the PR is closed
+- Preview environments are automatically torn down when the PR is closed
 
 ## Rollback
 
 If a deployment breaks production, roll back instantly.
 
 **Design decisions:**
-- Vercel retains all previous deployments — any previous deployment can be promoted to production with one click
-- Rollback is instant (no rebuild) — it re-routes traffic to the previous deployment's build output
+- Railway retains all previous deployments — any previous deployment can be promoted to production
+- Rollback is near-instant (re-routes traffic to the previous deployment)
 - After rollback, fix the issue in a new PR and re-deploy normally
-- Database migrations complicate rollbacks — if the new schema is incompatible with the old code, you need a forward fix (same as self-hosted, covered in phase-7/06-cicd-pipeline.md)
+- Database migrations complicate rollbacks — if the new schema is incompatible with the old code, you need a forward fix (covered in 05-cicd-pipeline.md)
 
-## Build Optimization
+## Scaling
 
 **Design decisions:**
-- Enable Vercel's build cache — subsequent builds only rebuild what changed
-- Keep build times under 3 minutes. If builds take longer, investigate: large dependencies, unoptimized images bundled at build time, or excessive static page generation.
-- Use `next/image` for all images — Vercel optimizes and caches them at the edge
-- ISR (Incremental Static Regeneration) for marketing pages — they're static at build time and revalidated on a schedule
+- Railway supports horizontal scaling (multiple replicas) and vertical scaling (more CPU/RAM per instance)
+- Start with a single instance. Scale vertically first — increase the instance size before adding replicas.
+- When horizontal scaling is needed, Railway distributes traffic across replicas automatically
+- Set resource limits to prevent runaway costs — configure max replicas and instance size caps
+- Railway's usage-based pricing means you pay for what you use — no idle server costs during low traffic
 
 ## Regions
 
 **Design decisions:**
-- Deploy serverless functions to the region closest to your database. If your Supabase instance is in eu-west, deploy Vercel functions to eu-west.
-- Mismatched regions (functions in us-east, database in eu-west) add ~100ms latency to every database query
-- Static assets and edge functions are served globally regardless of the function region
+- Deploy services to the region closest to your database. If your Neon instance is in eu-west, deploy Railway services to eu-west.
+- Mismatched regions (app in us-east, database in eu-west) add ~100ms latency to every database query
+- Railway supports multiple regions — choose based on your primary user base
 
 ## Spending Limits
 
 **Design decisions:**
-- Set a spending limit in the Vercel dashboard to prevent unexpected bills from traffic spikes
-- Monitor usage (bandwidth, function invocations, build minutes) in the Vercel dashboard
-- Vercel's free tier (Hobby) is sufficient for development. Pro plan for production.
+- Set a usage limit in the Railway dashboard to prevent unexpected bills from traffic spikes
+- Monitor usage (CPU, RAM, bandwidth, build minutes) in the Railway dashboard
+- Railway's Trial plan is sufficient for development. Pro plan for production.
 
 ## What to Test
 
 - Deployment triggers automatically on push to main
-- Preview deployments are created for every PR with a unique URL
+- Preview environments are created for every PR with a unique URL
 - Custom domain resolves correctly with HTTPS
 - Rollback to a previous deployment works and serves the old version
-- Environment variables are correctly set (test vs production keys)
-- Build completes in under 3 minutes
-- Static assets are served from CDN (check cache headers)
+- Environment variables are correctly scoped (preview vs production)
+- Build completes in a reasonable time (under 5 minutes)
+- Private networking between services works (app can reach worker, database)
 
 ## Edge Cases
 
-- **Build fails on Vercel but passes locally** — usually caused by: different Node.js version (pin in package.json engines), missing environment variables (set in Vercel dashboard), or case-sensitive file imports (Vercel runs Linux, Windows is case-insensitive).
-- **Preview deployment uses production environment variables** — configure separate environment variable scopes in Vercel: Production, Preview, and Development. Preview deployments should use test API keys.
-- **Custom domain SSL not provisioning** — DNS is not pointing to Vercel yet, or DNS propagation is still in progress. Verify DNS records and wait up to the TTL period.
-- **Traffic spike causes unexpected bill** — set spending limits in the Vercel dashboard. For DDoS-level traffic, Vercel's edge network absorbs it, but function invocations still count. Consider Cloudflare in front of Vercel for additional DDoS protection.
+- **Build fails on Railway but passes locally** — usually caused by: different Node.js version (pin in Dockerfile), missing environment variables (set in Railway dashboard), or case-sensitive file imports (Railway runs Linux, Windows is case-insensitive).
+- **Preview environment uses production environment variables** — configure separate environment variable scopes in Railway. Preview environments should use test API keys.
+- **Custom domain SSL not provisioning** — DNS is not pointing to Railway yet, or DNS propagation is still in progress. Verify DNS records and wait up to the TTL period.
+- **Traffic spike causes unexpected bill** — set usage limits in the Railway dashboard. For DDoS-level traffic, put Cloudflare in front of Railway for edge-level protection.
 - **Need to deploy a hotfix while a PR is in review** — push the hotfix directly to main. It deploys immediately. The PR will need to be rebased after.
+- **Service-to-service communication fails** — verify services are in the same Railway project and using private networking URLs (internal DNS), not public URLs.
 
 ## Implementation Checklist
 
-- [ ] GitHub repository connected to Vercel
-- [ ] Custom domain added and DNS configured
+- [ ] GitHub repository connected to Railway
+- [ ] Railway project created with app service (and worker service if needed)
+- [ ] Dockerfile verified and building correctly on Railway
+- [ ] Custom domain added and DNS configured (CNAME to Railway)
+- [ ] Cloudflare proxy enabled for CDN and DDoS protection (if needed)
 - [ ] SSL verified (automatic)
-- [ ] Environment variables set in Vercel dashboard (Production, Preview, Development scopes)
-- [ ] Preview deployments working for PRs
-- [ ] Serverless function region matches database region
-- [ ] Spending limit configured
-- [ ] Build time under 3 minutes
+- [ ] Environment variables set in Railway (production and preview scopes)
+- [ ] Preview environments enabled for PRs
+- [ ] Service region matches Neon database region
+- [ ] Usage limits configured
 - [ ] Rollback tested (promote a previous deployment)
-- [ ] ISR configured for marketing pages
+- [ ] Private networking verified between services
 
 ## Common Mistakes
 
-- Serverless functions in a different region than the database (adds 100ms+ to every query)
-- No environment variable scoping (preview deployments use production Stripe keys — charges real customers during testing)
-- No spending limit (traffic spike or bot attack causes a surprise bill)
-- Building the entire app on every push when ISR could handle marketing pages statically
+- Services in a different region than the database (adds 100ms+ to every query)
+- No environment variable scoping (preview environments use production Stripe keys — charges real customers during testing)
+- No usage limits (traffic spike or bot attack causes a surprise bill)
+- Using Nixpacks when you should be using an explicit Dockerfile (less control, harder to debug build issues)
 - Not testing rollback before you need it (discover the process during a production incident)
-- Case-sensitive imports that work on Windows but fail on Vercel's Linux build
+- Case-sensitive imports that work on Windows but fail on Railway's Linux build
+- Using public URLs for service-to-service communication (adds latency, bypasses private network)

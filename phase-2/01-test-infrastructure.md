@@ -6,12 +6,14 @@
 
 Use Vitest.
 
+**AI interface:** Vitest CLI (`vitest`).
+
 ## Test Database
 
 Tests must never run against the development or production database.
 
 **Design decisions:**
-- Use a dedicated test database instance — a separate Supabase local instance that is only used during test runs
+- Use a dedicated test database instance — a separate Neon branch that is only used during test runs
 - The test database is created and seeded before the test suite runs and destroyed after
 - Each test file gets a clean database state — reset the database between test files (not between individual tests within a file — that's too slow)
 - Use transactions for isolation within a test file: start a transaction before each test, rollback after. This is faster than re-seeding between every test.
@@ -26,7 +28,7 @@ External services are mocked. Internal services are not.
 - Email provider (Resend) — replaced by Inbucket in test environment (see Email Testing section below). Mock the send function only in unit tests that don't need to verify email content.
 - AI provider (Claude API) — mock the API response, verify the correct prompt was sent
 - Image generation (Recraft) — mock the API response
-- File storage (R2/Supabase Storage) — mock the upload and download functions
+- File storage (Cloudflare R2) — mock the upload and download functions
 - External webhooks — simulate incoming webhook payloads with test data
 
 **What NOT to mock:**

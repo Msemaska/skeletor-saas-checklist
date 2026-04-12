@@ -32,11 +32,10 @@ Use Trigger.dev for both scheduled and event-triggered jobs. Use pg_cron for pur
 - pg_cron runs SQL on a schedule inside the database — no network hop, no external dependency
 - Use pg_cron for pure database maintenance, Trigger.dev for everything that involves application logic
 
-**Do not use Vercel Cron for production workloads:**
-- Hobby plans are limited to once-per-day execution
-- Timing precision is unreliable (a job scheduled for 1:00am may run anywhere between 1:00am and 1:59am)
-- No retry, no monitoring, no concurrency protection
-- Vercel Cron is acceptable for triggering a Trigger.dev job on a schedule, but not for running the job itself
+**Railway cron:**
+- Railway supports cron scheduling via its native scheduler, which is sufficient for triggering jobs on a schedule
+- For anything beyond simple scheduling (retries, monitoring, concurrency control, complex workflows), Trigger.dev remains the recommendation
+- Railway cron is acceptable for triggering a Trigger.dev job on a schedule, but not for running complex job logic itself
 
 ## Common Scheduled Jobs
 
@@ -183,7 +182,7 @@ pg_cron is for database housekeeping. Trigger.dev is for everything else.
 - Non-idempotent jobs (running twice produces duplicate emails, double charges, corrupted data)
 - No retry mechanism (external API is down, job fails permanently instead of retrying)
 - Silent failures (job fails, nobody knows, data drifts)
-- Using Vercel Cron for production scheduled work (unreliable timing, no retry, no monitoring)
+- Using a basic cron scheduler for complex job logic instead of Trigger.dev (no retry, no monitoring, no concurrency control)
 - All maintenance jobs scheduled at the same time (resource contention, slow queries for users)
 - Deleting 10,000 records in a single query (locks the table, blocks user requests)
 - Jobs running in user context instead of system context (RLS blocks the operation)

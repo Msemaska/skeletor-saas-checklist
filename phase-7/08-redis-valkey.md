@@ -4,7 +4,7 @@
 
 ## What It Is
 
-An in-memory data store used for caching, rate limiting, session storage, and job queues when your product needs sub-millisecond reads or shared state across serverless-style workers. Use Valkey — it's the open-source fork of Redis after Redis changed its license in 2024. API-compatible, community-maintained, same performance.
+An in-memory data store used for caching, rate limiting, session storage, and job queues when your product needs sub-millisecond reads or shared state across workers. Use Valkey — it's the open-source fork of Redis after Redis changed its license in 2024. API-compatible, community-maintained, same performance. In production, deploy as a Railway add-on or Railway service. For local development, run as a Docker container.
 
 ## When You Need This
 
@@ -23,17 +23,24 @@ This is not part of the default stack. Add Valkey only when you hit a specific n
 
 ## Architecture
 
+**Production (Railway):**
+```
+App Service ──→ Valkey Service (Railway private network)
+Worker Service ──→ Valkey Service
+```
+
+Valkey runs as a Railway service or add-on, accessible only via Railway's private network. Never expose Valkey's port to the internet.
+
+**Local development (Docker Compose):**
 ```
 App Container ──→ Valkey Container (port 6379, Docker network only)
 Worker Container ──→ Valkey Container
 ```
 
-Valkey runs as a container in the Docker Compose stack, accessible only on the Docker network. Never expose Valkey's port to the internet.
-
 ## Configuration
 
 **Design decisions:**
-- Use the official Valkey Alpine image, pinned to the major version
+- In production, use Railway's Redis/Valkey add-on or deploy the official Valkey image as a Railway service. For local dev, use the official Valkey Alpine image, pinned to the major version.
 - Set a memory limit (`maxmemory`) appropriate to your server (256MB is a reasonable starting point for an MVP)
 - Eviction policy: `allkeys-lru` (when memory is full, evict the least recently used key). This is correct for cache-style usage.
 - Persistence: enable RDB snapshots for data that should survive a restart (job queue state). Disable persistence entirely if using Valkey purely as a cache (data can be regenerated).
@@ -65,12 +72,23 @@ Valkey runs as a container in the Docker Compose stack, accessible only on the D
 - **Connection leak** — the app opens connections to Valkey but doesn't close them. Use a connection pool with a maximum connection limit. Monitor active connections.
 - **Key naming collision** — two different features use the same key format and overwrite each other's data. Use namespaced key prefixes (`cache:`, `ratelimit:`, `queue:`) to prevent collisions.
 
+## Security Considerations
+
+- Publicly accessible Redis/Valkey instances are one of the most exploited attack surfaces on the internet — attackers use them for remote code execution, cryptocurrency mining, and data exfiltration. Network isolation and password auth (Configuration section) are the minimum; both must be in place.
+- Disable dangerous commands in production (`FLUSHALL`, `FLUSHDB`, `DEBUG`, `CONFIG`, `KEYS`). These commands can wipe all data or expose configuration details. Valkey supports renaming or disabling commands in the configuration file.
+- Valkey stores data in memory — cached data (potentially including user data, session tokens, or rate limit counters) is accessible to anyone who can connect. The password and network isolation are the only barriers.
+- If persistence is enabled (RDB snapshots), the dump file on disk contains all stored data in plaintext. Ensure the Docker volume is on an encrypted disk, and restrict file permissions so only the Valkey process can read the dump file.
+- Connection strings contain the password in plaintext. Never log them, include them in error reports, or expose them in client-side code.
+- Monitor for unexpected connection count spikes — may indicate a compromised container abusing the Valkey instance.
+
 ## Implementation Checklist
 
-- [ ] Valkey container in Docker Compose (Alpine image, pinned version)
-- [ ] Port not exposed to the internet (Docker network only)
+- [ ] Valkey deployed as Railway service or add-on (production)
+- [ ] Valkey container in Docker Compose for local development (Alpine image, pinned version)
+- [ ] Port not exposed to the internet (Railway private network / Docker network only)
 - [ ] Password set via environment variable
 - [ ] Memory limit configured (`maxmemory`)
+- [ ] Dangerous commands disabled in production (`FLUSHALL`, `FLUSHDB`, `DEBUG`, `CONFIG`, `KEYS`)
 - [ ] Eviction policy set to `allkeys-lru`
 - [ ] Persistence configured appropriately (RDB for queues, disabled for pure cache)
 - [ ] Key naming convention established (namespaced prefixes)

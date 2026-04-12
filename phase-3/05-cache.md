@@ -35,7 +35,7 @@ User Request
 
 ## Layer 1: CDN / Edge Cache
 
-Handled automatically by your hosting provider (Vercel, Cloudflare, etc.). You don't build this — you configure it.
+Handled automatically by your hosting provider (Railway, Cloudflare, etc.). You don't build this — you configure it.
 
 **What gets cached at the edge:**
 - Static assets (images, fonts, CSS, JS bundles) — cached indefinitely with content hashing

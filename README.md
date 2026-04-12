@@ -16,7 +16,7 @@ Skeletor eliminates this. Every design decision is pre-made, documented, and opi
 
 The project is structured as a phased checklist with deep-dive reference files:
 
-- **`saas-launch-checklist.md`** — the master checklist of everything a SaaS business needs, organized in 21 phases from strategy to app store listings
+- **`saas-launch-checklist.md`** — the master checklist of everything a SaaS business needs, organized in 20 phases from strategy to app store listings
 - **`phase-X/` directories** — deep-dive files for each checklist item, containing the actual design decisions, edge cases, security considerations, and implementation checklists
 - **`CLAUDE.md`** — the rules for how these files are written and maintained
 
@@ -31,20 +31,19 @@ The project is structured as a phased checklist with deep-dive reference files:
 | 4 | Public / Customer API | If applicable |
 | 5 | UI/UX | Interface patterns |
 | 6 | Marketing Site & Technical SEO | The public website |
-| 7 | Self-Hosted Infrastructure | If not using Vercel |
-| 8 | Managed Infrastructure | If using Vercel/Supabase |
-| 9 | Business Wrapper | Billing, emails, legal |
-| 10 | Customer Support | Help desk, knowledge base |
-| 11 | Observability | Monitoring, analytics, alerting |
-| 12 | Email & Domain Setup | Email infrastructure |
-| 13 | Security Audit | Pre-launch verification |
-| 14 | Content | Copy, visuals, blog, SEO content |
-| 15 | Go-To-Market | Distribution, launch, ads |
-| 16 | Admin & Operations | Internal tooling, runbooks |
-| 17 | Growth & Retention | Post-launch optimization |
-| 18 | Accessibility & i18n | Post-launch polish |
-| 19 | Partnerships & Sales | If B2B |
-| 20 | App Store & Marketplace | If applicable |
+| 7 | Infrastructure | Railway, Neon, Cloudflare R2, DNS |
+| 8 | Business Wrapper | Billing, emails, legal |
+| 9 | Customer Support | Help desk, knowledge base |
+| 10 | Observability | Monitoring, analytics, alerting |
+| 11 | Email & Domain Setup | Email infrastructure |
+| 12 | Security Audit | Pre-launch verification |
+| 13 | Content | Copy, visuals, blog, SEO content |
+| 14 | Go-To-Market | Distribution, launch, ads |
+| 15 | Admin & Operations | Internal tooling, runbooks |
+| 16 | Growth & Retention | Post-launch optimization |
+| 17 | Accessibility & i18n | Post-launch polish |
+| 18 | Partnerships & Sales | If B2B |
+| 19 | App Store & Marketplace | If applicable |
 
 ## How to Use It
 
@@ -83,7 +82,7 @@ When you start building a feature, give the AI the relevant deep-dive file as co
 - Building auth → provide `phase-3/03-auth.md`
 - Setting up Stripe → provide `phase-9/02-stripe-architecture.md`
 - Creating the blog → provide `phase-14/04-blog-posts.md`
-- Deploying self-hosted → provide `phase-7/01-containerization.md` through `phase-7/10-redis-valkey.md`
+- Deploying to Railway → provide `phase-7/01-containerization.md` through `phase-7/11-dependency-scanning.md`
 
 The AI gets the architecture, design decisions, edge cases, what to test, security considerations, and common mistakes — all in one file. No improvisation needed.
 
@@ -108,7 +107,7 @@ When starting a new SaaS project with Skeletor, the AI handles the code — but 
 |---|---|---|
 | Cloudflare | Register domain, set up DNS | Phase 0 |
 | Google Workspace | Set up email (hello@yourdomain.com) | Phase 12 |
-| Supabase | Create project, get API keys | Phase 3 |
+| Neon | Create project, get connection string | Phase 3 |
 | Stripe | Create account, get test + live API keys | Phase 9 |
 | Resend | Create account, add sending domains | Phase 9 + 12 |
 | Sentry | Create project, get DSN | Phase 3 |
@@ -118,19 +117,18 @@ When starting a new SaaS project with Skeletor, the AI handles the code — but 
 | Google Search Console | Verify site ownership | Phase 11 |
 | Google OAuth | Create OAuth app, get client ID/secret | Phase 3 |
 | Apple Developer | If Apple Sign-In needed ($99/year) | Phase 3 |
-| GitHub | Create org, configure Dependabot | Phase 8 |
-| Vercel | Connect repo, configure domains | Phase 8 |
-| Hetzner | Provision server (if self-hosted) | Phase 7 |
-| Postiz | Self-host instance for social scheduling | Phase 15 |
-| Rewardful | Create account for referral program | Phase 17 |
-| Senja | Create account for testimonial collection | Phase 17 |
-| Attio | Create CRM account (if B2B) | Phase 19 |
+| GitHub | Create org, configure Dependabot | Phase 7 |
+| Railway | Create project, connect repo | Phase 7 |
+| Postiz | Self-host instance for social scheduling | Phase 14 |
+| Rewardful | Create account for referral program | Phase 16 |
+| Senja | Create account for testimonial collection | Phase 16 |
+| Attio | Create CRM account (if B2B) | Phase 18 |
 
 ### Keys & Credentials to Collect
 
 | Credential | From | Store In |
 |---|---|---|
-| Supabase URL + Anon Key + Service Role Key | Supabase dashboard | .env |
+| Neon Database URL + Connection String | Neon dashboard | .env |
 | Stripe Secret Key (test) | Stripe dashboard | .env.local |
 | Stripe Secret Key (live) | Stripe dashboard | .env.production |
 | Stripe Publishable Key (test + live) | Stripe dashboard | .env |
@@ -158,8 +156,8 @@ When starting a new SaaS project with Skeletor, the AI handles the code — but 
 | Draft Product Hunt listing and maker comment | Phase 15 | From copy bank |
 | Set up social media accounts | Phase 15 | From copy bank bios |
 | Create Discord server for alerting | Phase 11 | Three channels: critical, warning, info |
-| Test backup restore | Phase 8 | At least once before launch |
-| Run security audit | Phase 13 | After all features built, before launch |
+| Test backup restore | Phase 7 | At least once before launch |
+| Run security audit | Phase 12 | After all features built, before launch |
 | Test with real $1 payment on Stripe live mode | Phase 9 | Before public launch |
 
 ### The AI's Job vs The Human's Job
@@ -220,7 +218,9 @@ Files contain decisions, not education. No explaining what JWT is. No comparing 
 | Package Manager | npm |
 | Styling | Tailwind CSS |
 | State | Zustand (client), TanStack Query (server) |
-| Backend | Supabase (Auth, Database, Storage) |
+| Database | Neon (Postgres) |
+| Auth | Neon Auth (Better Auth) |
+| Object Storage | Cloudflare R2 |
 | Forms | React Hook Form + Zod |
 | UI | Shadcn (primitives), MagicUI (animated/decorative) |
 | Payments | Stripe |
@@ -232,7 +232,5 @@ Files contain decisions, not education. No explaining what JWT is. No comparing 
 | Social Scheduling | Postiz (self-hosted) |
 | Testing | Vitest + Playwright |
 | CI/CD | GitHub Actions |
-| Hosting (managed) | Vercel |
-| Hosting (self-hosted) | Hetzner + Docker + Caddy |
+| Hosting | Railway |
 | DNS + CDN | Cloudflare |
-| Object Storage | Cloudflare R2 (self-hosted) / Supabase Storage (managed) |

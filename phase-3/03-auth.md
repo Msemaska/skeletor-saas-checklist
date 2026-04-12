@@ -50,7 +50,7 @@ Every SaaS auth system has the same fundamental components regardless of provide
 
 **Social Login / OAuth:**
 
-Every provider requires: client ID, client secret, callback URL, and scope configuration. Your auth provider (Supabase Auth or Better Auth) handles the OAuth handshake — you configure the credentials and callback URLs, not the protocol itself.
+Every provider requires: client ID, client secret, callback URL, and scope configuration. Your auth provider (Neon Auth or self-hosted Better Auth) handles the OAuth handshake — you configure the credentials and callback URLs, not the protocol itself.
 
 **Google OAuth — mandatory for every SaaS:**
 - The single most expected social login. If you only add one, make it Google.
@@ -99,7 +99,7 @@ Every provider requires: client ID, client secret, callback URL, and scope confi
 
 ### 2. Session Management (is the user still authenticated?)
 
-Use a hybrid approach: JWT for short-lived access tokens, database-backed sessions for refresh and revocation. Both Supabase Auth and Better Auth implement this by default.
+Use a hybrid approach: JWT for short-lived access tokens, database-backed sessions for refresh and revocation. Neon Auth (and Better Auth if self-hosted) implements this by default.
 
 - Short-lived access token (15-60 minutes) — auto-refreshes, no DB lookup needed
 - Long-lived refresh token (7-14 days) — stored in database, enables revocation
@@ -154,8 +154,8 @@ Use a hybrid approach: JWT for short-lived access tokens, database-backed sessio
 
 **Row-Level Security (RLS):**
 - Database-level enforcement — even if your API has a bug, users can't access other users' data
-- Supabase makes this native with Postgres RLS policies
-- Self-hosted: implement at query level or use Postgres RLS directly
+- Neon supports Postgres RLS natively — the application layer sets session context (e.g., `set_config('app.user_id', ...)` at the start of each request) and RLS policies reference `current_setting('app.user_id')`
+- This is standard Postgres, no vendor-specific functions — works the same whether using Neon Auth or self-hosted Better Auth
 - RLS policies should handle both role-based and resource-level checks (e.g., "user is a member of this workspace AND is assigned to this project")
 
 ### 7. Email Change
@@ -326,7 +326,7 @@ Middleware intercepts every request before it hits your pages. Use it for broad 
 - Check if a session cookie exists
 - Redirect unauthenticated users to the sign-in page
 - Redirect authenticated users away from sign-in and sign-up pages
-- Refresh expired tokens (required for Supabase SSR)
+- Refresh expired tokens (handled by Better Auth's Next.js integration)
 - Preserve the originally requested URL so you can redirect back after sign-in
 
 **What it should NOT do:**
@@ -402,37 +402,42 @@ Every project should maintain an explicit route map documenting which routes req
 
 ## Providers
 
-### Supabase Auth (bundled with Supabase)
+### Neon Auth (recommended)
 
-**Best for:** projects already using Supabase for database.
+**Best for:** all projects. Managed auth built on Better Auth, stores auth data directly in your Neon Postgres database.
+
+**AI interface:** Neon CLI (`neonctl`), Neon MCP server.
 
 | Aspect | Details |
 |---|---|
-| **Type** | Managed, bundled with Supabase |
-| **Cost** | Free (unlimited users on free tier, stays free on paid plans) |
-| **Session strategy** | JWT + database sessions hybrid |
-| **OAuth providers** | Google, GitHub, Apple, Azure, Discord, Twitter, + more |
-| **2FA** | TOTP support built-in |
-| **Email verification** | Built-in (customizable templates) |
-| **RLS integration** | Native — auth.uid() available in Postgres RLS policies |
-| **Next.js support** | @supabase/ssr package for App Router |
+| **Type** | Managed, built on Better Auth |
+| **Cost** | Included with Neon |
+| **Session strategy** | Database sessions (Better Auth default, configurable) |
+| **OAuth providers** | 20+ built-in via Better Auth (Google, GitHub, Apple, Microsoft, Discord, etc.) |
+| **2FA** | TOTP support via Better Auth |
+| **Email verification** | Built-in |
+| **RLS integration** | Standard Postgres RLS — application sets session context (e.g., `set_config('app.user_id', ...)`) and RLS policies reference `current_setting('app.user_id')` |
+| **Next.js support** | First-class, App Router native via Better Auth's Next.js integration |
 | **Pre-built UI** | None — you build your own forms |
-| **Vendor lock-in** | Medium — auth is tied to Supabase, but user data is in your Postgres |
+| **Vendor lock-in** | Low — all data in your Neon Postgres database, auth layer is standard Better Auth schema |
+| **Branch-compatible** | Yes — auth data branches with your database for preview environments |
+| **TypeScript** | Full inference via Better Auth, no manual type augmentation |
 
 **Strengths:**
-- Zero additional cost
-- RLS integration is seamless — auth.uid() in policies means database-level security
-- Handles the entire auth backend (hashing, tokens, OAuth handshakes)
-- You only build the frontend forms
+- Managed service — no auth infrastructure to maintain
+- Auth data lives in your database, not a separate service — query users, sessions, and accounts with standard SQL
+- Branch-compatible — preview environments get their own auth state automatically
+- Built on Better Auth — same APIs, same schema, same TypeScript inference
+- Auth.js (NextAuth) team joined Better Auth in Sept 2025 — it's the recommended replacement for NextAuth
 
 **Weaknesses:**
 - No pre-built UI components (you build every form)
-- Email templates are limited (better to use Resend + React Email for custom emails)
-- SSR setup requires careful cookie handling with @supabase/ssr
+- Does not yet support custom Better Auth plugins — if you need plugins beyond what Neon Auth exposes, self-host Better Auth instead
+- Newer managed offering, fewer tutorials than established providers
 
 ### Better Auth (self-hosted, open source)
 
-**Best for:** self-hosted projects, or projects that want full control without vendor lock-in.
+**Best for:** projects that need custom Better Auth plugins that Neon Auth doesn't support yet.
 
 | Aspect | Details |
 |---|---|
@@ -442,29 +447,27 @@ Every project should maintain an explicit route map documenting which routes req
 | **OAuth providers** | 20+ built-in (Google, GitHub, Apple, Microsoft, Discord, etc.) |
 | **2FA** | Plugin (TOTP, recovery codes) |
 | **Email verification** | Built-in |
-| **RLS integration** | Manual — you query the session in your API/middleware |
+| **RLS integration** | Standard Postgres RLS — same pattern as Neon Auth (application-set session context) |
 | **Next.js support** | First-class, App Router native |
 | **Pre-built UI** | None — you build your own forms |
 | **Vendor lock-in** | None — all data in your database |
 | **TypeScript** | Full inference, no manual type augmentation |
 
 **Strengths:**
-- Auth.js (NextAuth) team joined Better Auth in Sept 2025 — it's the recommended replacement
+- Full plugin ecosystem (2FA, organizations, passkeys, custom plugins)
 - ~100K weekly downloads by March 2026, fastest-growing auth library
 - Full TypeScript inference (session types auto-inferred from config)
-- Plugin ecosystem (2FA, organizations, passkeys)
 - All user data in your own database, zero vendor lock-in
 - Works with any database (Postgres, MySQL, SQLite via Drizzle/Prisma adapters)
 
 **Weaknesses:**
-- You manage the infrastructure (database, email sending)
-- Newer ecosystem, fewer tutorials than Supabase Auth
+- You manage the auth infrastructure (deployment, email sending configuration)
 - No managed dashboard (you build admin tooling yourself)
 
 ## Which Provider to Choose
 
-- **Using Supabase for your database** → Supabase Auth. Free, native RLS integration, no additional service to manage.
-- **Self-hosted / not using Supabase** → Better Auth. Free, zero vendor lock-in, full TypeScript inference, all data in your database.
+- **Default** → Neon Auth. Managed, branch-compatible, data in your database, built on Better Auth. Use this unless you have a specific reason not to.
+- **Need custom Better Auth plugins** → Better Auth self-hosted against Neon. Same database, same schema, full plugin access. Migrate to Neon Auth later when plugin support catches up.
 
 ## Security Checklist
 

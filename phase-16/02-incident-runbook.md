@@ -26,7 +26,7 @@ Every incident follows the same 5-step process:
 ### 1. Detect
 
 **Design decisions:**
-- Detection comes from: unified alerting hub (phase-11/01-unified-alerting.md), user reports via Tawk.to, Sentry error spike, UptimeRobot downtime alert
+- Detection comes from: unified alerting hub (phase-10/01-unified-alerting.md), user reports via Tawk.to, Sentry error spike, UptimeRobot downtime alert
 - The person who detects the incident starts the response — don't wait for someone else to notice
 
 ### 2. Assess
@@ -48,8 +48,8 @@ Every incident follows the same 5-step process:
 ### 4. Fix
 
 **Design decisions:**
-- If caused by a bad deployment: rollback immediately (phase-8/01-hosting-deployment.md for Managed, phase-7/06-cicd-pipeline.md for Self-Hosted)
-- If caused by a database issue: check backups, consider point-in-time recovery (phase-8/03-database-backups.md)
+- If caused by a bad deployment: rollback immediately (phase-7/06-cicd-pipeline.md)
+- If caused by a database issue: check backups, consider point-in-time recovery (phase-7/03-database-backups.md)
 - If caused by a third-party service: check the service's status page, implement workaround if possible, notify users that the issue is external
 - If cause is unknown: add logging, reproduce the issue, fix and deploy
 - Document every action taken during the fix (timestamp + what was done) — this becomes the post-mortem timeline
@@ -68,7 +68,7 @@ Every incident follows the same 5-step process:
 ### App is Down (Critical)
 
 1. Check UptimeRobot — confirm the health check is failing
-2. Check the hosting provider (Vercel dashboard or server SSH)
+2. Check the hosting provider (Railway dashboard or server SSH)
 3. If bad deployment: rollback to previous deployment
 4. If server issue (self-hosted): check Docker containers, restart if needed
 5. If database issue: check database connectivity, check disk space, check connection pool
@@ -78,7 +78,7 @@ Every incident follows the same 5-step process:
 ### Auth is Broken (High)
 
 1. Check Sentry for auth-related errors
-2. Check Supabase Auth status page and application auth logs
+2. Check Neon Auth status page and application auth logs
 3. Check recent deployments — did middleware or auth config change?
 4. If deployment-related: rollback
 5. If provider-related: notify users, wait for provider resolution
@@ -123,7 +123,7 @@ Every incident follows the same 5-step process:
 
 - **Incident happens while the runbook author is unavailable** — the runbook must be self-contained. Any team member should be able to follow it without additional context.
 - **Multiple incidents at the same time** — prioritise by severity. Critical over High, High over Medium. If two Critical incidents happen simultaneously, fix the one affecting more users first.
-- **Incident is caused by a security breach** — follow the incident process AND the security audit procedure (phase-13/01-security-audit.md). Take the affected system offline immediately. Do not communicate publicly until you understand the scope.
+- **Incident is caused by a security breach** — follow the incident process AND the security audit procedure (phase-12/01-security-audit.md). Take the affected system offline immediately. Do not communicate publicly until you understand the scope.
 - **User data was lost** — check backups. Restore from the most recent backup. Notify affected users with transparency about what happened and what was lost.
 
 ## Implementation Checklist

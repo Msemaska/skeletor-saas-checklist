@@ -6,6 +6,8 @@
 
 Use PostHog. It handles product analytics, funnels, session replay, and feature flags in one platform. Self-hostable if needed.
 
+**AI interface:** PostHog MCP.
+
 ## Product Analytics
 
 ### What to Track

@@ -10,11 +10,11 @@ A partnership program that lets other companies integrate with your product, co-
 
 **Partner page:** A marketing page at `/partners` on the main site. Content includes: what the integration partnership looks like, benefits for partners (API access, co-marketing, listing in your integrations directory), example use cases, and an application form at the bottom. The page uses the same design system and components as the rest of the marketing site.
 
-**Application form:** A React Hook Form with Zod validation. Fields: company name, website, contact email, integration description (what they want to build), estimated user overlap. Submissions go to a `partner_applications` table in Supabase with status `pending`. The team reviews applications in an internal admin view.
+**Application form:** A React Hook Form with Zod validation. Fields: company name, website, contact email, integration description (what they want to build), estimated user overlap. Submissions go to a `partner_applications` table in Neon with status `pending`. The team reviews applications in an internal admin view.
 
 **Application workflow:** Submitted → Reviewed → Approved or Rejected. On approval, the partner receives an email with API credentials (a dedicated API key created in Unkey with a `partner_` prefix) and a link to the partner onboarding docs. On rejection, the partner receives an email with a brief reason.
 
-**Partner onboarding docs:** A section within the Fumadocs site (from phase 18) at `/docs/partners/`. Content includes: API access setup, integration guide with step-by-step instructions for common integration patterns, co-branding guidelines (logo usage, naming conventions, approved copy), and a partner support contact.
+**Partner onboarding docs:** A section within the Fumadocs site (from phase 17) at `/docs/partners/`. Content includes: API access setup, integration guide with step-by-step instructions for common integration patterns, co-branding guidelines (logo usage, naming conventions, approved copy), and a partner support contact.
 
 **Co-marketing:** Joint blog posts published on your blog with a partner tag. Shared social media promotion — you post about the integration, the partner posts about the integration. Inclusion in each other's integration directories or marketplace listings. All co-marketing activities are agreed upon during the onboarding call, not ad-hoc.
 
@@ -45,7 +45,7 @@ A partnership program that lets other companies integrate with your product, co-
 ## Implementation Checklist
 
 - [ ] `/partners` marketing page built with application form
-- [ ] `partner_applications` table created in Supabase (company_name, website, contact_email, description, status, created_at)
+- [ ] `partner_applications` table created in Neon (company_name, website, contact_email, description, status, created_at)
 - [ ] Application form submits to a Server Action that inserts into the table
 - [ ] Internal admin view to list, review, approve, and reject applications
 - [ ] Approval email template with API credentials and docs link

@@ -22,7 +22,7 @@ The legal documents your SaaS needs before launch — privacy policy, terms of s
 Use Claude to draft all legal pages. These are not boilerplate copy-pastes — they need to be tailored to your specific product, what data you collect, how you process it, and which services you use.
 
 **Design decisions:**
-- Draft each page with Claude, providing: your product name, what the product does, what personal data is collected, which third-party services process data (Supabase, Stripe, Resend, PostHog, Sentry, Novu), your business entity and jurisdiction, and your contact information
+- Draft each page with Claude, providing: your product name, what the product does, what personal data is collected, which third-party services process data (Neon, Stripe, Resend, PostHog, Sentry, Novu), your business entity and jurisdiction, and your contact information
 - Have a lawyer review the drafts before launch if handling sensitive data (health, finance, children's data). For a standard SaaS, Claude-generated drafts are a reasonable starting point.
 - Update legal pages when you add new third-party services, change data collection practices, or expand to new jurisdictions
 - Display a "Last updated" date on every legal page — this is required by GDPR
@@ -33,7 +33,7 @@ What to include:
 - What personal data you collect (name, email, usage data, payment info)
 - Why you collect it (providing the service, billing, analytics, support)
 - How long you retain it
-- Who you share it with (list every third-party service by name: Supabase for database, Stripe for payments, Resend for emails, PostHog for analytics, Sentry for error tracking)
+- Who you share it with (list every third-party service by name: Neon for database, Stripe for payments, Resend for emails, PostHog for analytics, Sentry for error tracking)
 - User rights: access, correction, deletion, data portability, objection to processing
 - How users exercise their rights (self-service in app settings + support contact)
 - Cookie policy (linked from the privacy page to `/cookies`)

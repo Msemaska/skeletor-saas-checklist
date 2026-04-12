@@ -120,7 +120,7 @@ An attacker injects a script into a field (e.g., name: `<script>steal(cookies)</
 An attacker crafts input that alters a SQL query (e.g., `'; DROP TABLE users; --`).
 
 **Defense:**
-- **Use parameterized queries exclusively** — every database client and ORM (Supabase client, Drizzle, Prisma) uses parameterized queries by default. As long as you use the client's query builder and never construct SQL strings from user input, SQL injection is not possible.
+- **Use parameterized queries exclusively** — every database client and ORM (Neon serverless driver, Drizzle, Prisma) uses parameterized queries by default. As long as you use the client's query builder and never construct SQL strings from user input, SQL injection is not possible.
 - **Never concatenate user input into SQL strings** — not in application code, not in database functions, not in migration scripts that accept parameters.
 - **RLS policies are safe** — they reference the authenticated user's session function, not user input.
 - **This is a solved problem** — if you're using modern tooling correctly, SQL injection requires actively doing something wrong (string concatenation). The rule is simple: never build SQL from strings.
@@ -153,7 +153,7 @@ An attacker manipulates filenames or paths to access files outside the intended 
 - **Generate filenames server-side** — never use the client-provided filename for storage. Generate a UUID or hash-based filename and store the original name as metadata.
 - **Validate file type on backend** — check both the MIME type AND the file's magic bytes (first few bytes that identify the file type). Don't trust the client-reported Content-Type header alone.
 - **Enforce file size limits** — at the application level and at the storage/infrastructure level.
-- **Store uploads outside the application directory** — use object storage (Supabase Storage, S3, R2), never the local filesystem.
+- **Store uploads outside the application directory** — use object storage (Cloudflare R2), never the local filesystem.
 
 ### Rate Limiting on All Input Endpoints
 
