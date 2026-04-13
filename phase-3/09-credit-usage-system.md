@@ -181,17 +181,61 @@ Two requests can check the limit simultaneously, both see "under limit," and bot
 
 ## What to Test
 
-- Usage check happens BEFORE the action executes (not after)
-- Action is blocked when workspace is at the plan limit
-- Error message includes: what limit, current count, plan limit, upgrade link
-- Usage counter increments atomically (no race condition overshoot)
-- Usage counter resets on billing period change (Stripe webhook)
-- Seat limit is checked on invitation, not on member sign-up
-- Storage limit is checked before upload, not after
-- Upgrade: new limits take effect immediately, counts carry over
-- Downgrade: blocked if current usage exceeds new plan limits (seats, storage)
-- Free plan with NULL limit is treated as unlimited
-- System/admin operations do not increment usage counters
+### Enforcement
+- Action proceeds when workspace is under its plan limit
+- Action is blocked when workspace is at its plan limit
+- Usage is checked BEFORE the action executes — action does not run if limit is reached
+- Error response includes: what limit was hit, current count, plan limit, and upgrade link
+- NULL plan limit is treated as unlimited — action always proceeds
+- System and admin operations do not increment usage counters
+- Bulk operation checks total remaining capacity before starting — does not process a partial batch then fail
+
+### Atomic Increment
+- Usage counter increments atomically — concurrent requests cannot both pass the limit check simultaneously
+- Counter does not exceed the plan limit due to a race condition
+
+### Seat Limits
+- Seat limit is checked when inviting a member, not when the member signs up
+- Invitation is blocked when workspace is at its seat limit
+- Seat count decreases immediately when a member is removed
+- Downgrade is blocked when current member count exceeds the new plan's seat limit
+
+### Storage Limits
+- Storage limit is checked before accepting an upload
+- Upload is blocked when it would push the workspace over its storage limit
+- Storage counter increments on file upload and decrements on file deletion
+- Downgrade does not delete files when usage exceeds the new plan's storage limit — blocks new uploads instead
+
+### Period Reset
+- Usage counter resets when Stripe invoice.paid webhook fires for a new billing period
+- Counter resets when an action occurs after period_end, even if the webhook has not yet arrived
+- Reset sets the counter to 0 — does not delete the usage record
+
+### Plan Changes
+- Upgrade: new (higher) limits take effect immediately
+- Upgrade: existing usage counts carry over — not reset on upgrade
+- Upgrade: workspace previously blocked at old limit is immediately unblocked
+- Downgrade: new limits take effect at the start of the next billing period, not immediately
+- Downgrade: blocked when current seat count exceeds the new plan's seat limit
+
+### Credits (if applicable)
+- Deducts from subscription credits before purchased credits
+- Action is blocked when both subscription and purchased credit balances are zero
+- Subscription credits reset on period boundary — purchased credits are not reset
+- Low balance warning is shown at 20% remaining
+
+### Auto-Top-Up
+- Auto-top-up can be enabled with a configured threshold and credit pack size
+- Auto-top-up can be disabled — no charge fires when disabled, even if balance hits zero
+- Triggers before blocking the action — the action that drained the balance completes, not fails
+- After successful auto-top-up, credit balance reflects the correct new amount (previous balance + purchased pack)
+- The triggering action proceeds without the user seeing an error or interruption
+- Only one auto-top-up charge fires when concurrent requests simultaneously drain the balance — not one per request
+- Payment failure: auto-top-up is disabled immediately
+- Payment failure: user is notified in-app and by email
+- Payment failure: further actions are blocked until the user manually tops up or fixes their payment method
+- Payment failure: does not retry silently — user must take action
+- Auto-top-up is not available and not offered when the workspace has no default payment method on file
 
 ## Edge Cases
 

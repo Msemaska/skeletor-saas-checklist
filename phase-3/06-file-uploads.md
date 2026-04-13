@@ -172,16 +172,35 @@ Not all uploads are permanent. Some files are temporary (evaluation, processing,
 
 ## What to Test
 
+### Signed URLs
 - Signed upload URL is generated only for authenticated users
-- File type validation rejects files with mismatched extension and magic bytes
-- File size limits are enforced (files over 10MB for images, 50MB for documents rejected)
-- Uploaded files are stored with server-generated filenames (not client-provided)
-- Private files require signed download URL (direct URL returns 403)
-- Public files are accessible via CDN URL without authentication
-- Image processing generates all three sizes (150x150, 600x600, original)
-- EXIF metadata is stripped from served images
-- Temporary files are cleaned up by the scheduled job after expiry
-- Entity deletion cascades to file deletion
+- Signed upload URL expires after 5 minutes — upload rejected after expiry
+- Signed download URL expires after 15 minutes — access rejected after expiry
+- Direct URL to private file returns 403 without a signed URL
+- Public file is accessible via CDN URL without authentication
+
+### Validation
+- File type validation rejects files where extension and magic bytes do not match
+- Images over 10MB are rejected
+- Documents over 50MB are rejected
+- Upload is blocked when it would push the workspace over its storage limit
+
+### Storage
+- Uploaded files are stored with server-generated UUIDs, not client-provided filenames
+- Upload to public bucket makes file accessible via CDN URL
+- Upload to private bucket requires signed URL for access
+
+### Image Processing
+- Processing generates 150x150 thumbnail
+- Processing generates 600x600 medium variant
+- Original file is preserved
+- EXIF metadata is stripped from all served images
+
+### Cleanup
+- Temporary files are deleted by the scheduled cleanup job after expiry
+- Entity deletion cascades to file deletion in storage
+- Orphaned files (upload started, entity never created) are removed by scheduled cleanup job
+- Failed upload does not create a file record in the database
 
 ## Edge Cases
 

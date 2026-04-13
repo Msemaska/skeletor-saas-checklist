@@ -327,7 +327,7 @@ Middleware intercepts every request before it hits your pages. Use it for broad 
 - Redirect unauthenticated users to the sign-in page
 - Redirect authenticated users away from sign-in and sign-up pages
 - Refresh expired tokens (handled by Better Auth's Next.js integration)
-- Preserve the originally requested URL so you can redirect back after sign-in
+- Preserve the full redirect context so the user continues where they left off after sign-in
 
 **What it should NOT do:**
 - Database lookups (middleware runs at the edge, latency to DB is high)
@@ -338,6 +338,21 @@ Middleware intercepts every request before it hits your pages. Use it for broad 
 - Maintain an explicit list of public routes (landing page, sign-in, sign-up, reset password, pricing, blog, webhook endpoints)
 - Everything not on the public list requires auth by default (deny by default, allow by exception)
 - Middleware matcher should exclude static files and assets to avoid unnecessary auth checks on images, fonts, etc.
+
+**Redirect context — preserving the user's intent across the login wall:**
+
+When an unauthenticated user is redirected to sign-in, their full intent must survive the interruption. Redirect them back to exactly what they were trying to do — not just the URL, but the action.
+
+- Store the destination as a `redirectTo` query param on the sign-in URL: `/sign-in?redirectTo=/dashboard/projects`
+- Include all query params in the redirectTo value — a user selecting a plan at `/pricing?plan=pro` should land back at `/pricing?plan=pro` after sign-in, with the plan pre-selected
+- After successful sign-in or sign-up, read `redirectTo` and navigate there — never hardcode a post-auth destination
+- If no `redirectTo` is present, fall back to the default dashboard
+- Validate the `redirectTo` value before redirecting — only allow relative URLs that belong to your app (prevent open redirect attacks)
+- This same mechanism handles cross-system flows:
+  - User clicks "Choose Plan" → not logged in → login → returns to checkout with plan pre-selected
+  - User clicks an invite link → not signed up → registers → lands in the correct workspace
+  - User clicks a shared resource link → not logged in → login → sees the resource, not the generic dashboard
+  - User's session expires mid-flow → re-authenticates → continues from where they were
 
 #### Layer 2: Server Components
 
@@ -543,17 +558,116 @@ Every project should maintain an explicit route map documenting which routes req
 
 ## What to Test
 
-- Full auth lifecycle: sign up → verify email → sign in → sign out
-- OAuth sign-in creates account and session correctly
-- Duplicate email on sign-up returns same response as successful sign-up (no account enumeration)
-- Password reset with expired token shows clear error with retry option
-- Account linking: same email across password + OAuth doesn't create duplicate
-- Session invalidation after password change (other sessions destroyed, current session kept)
-- Rate limiting blocks after threshold (5 sign-in attempts per email per 15 minutes)
-- 2FA challenge blocks session creation until TOTP verified
-- Account deletion cancels Stripe, destroys sessions, anonymizes shared content
-- RLS enforces workspace membership on every query
-- Middleware redirects unauthenticated users, redirects authenticated users away from auth pages
+### Registration
+- Creates a new user account with valid email and password
+- Rejects registration if email already exists — returns identical response as success (no enumeration)
+- Rejects registration if password fails strength requirements
+- Sends verification email immediately after registration
+- Creates account in unverified state — grants access with persistent banner, not a hard block
+- Rate limits sign-up to 5 attempts per IP per hour
+
+### Email Verification
+- Marks account as verified when valid token is clicked
+- Rejects expired verification token and shows resend option
+- Rejects already-used verification token
+- Rate limits resend to 3 per hour per email
+- Restricts account to read-only access after 7 days unverified
+
+### Sign In
+- Creates a session for valid email and password
+- Rejects wrong password without revealing whether the email exists
+- Rejects non-existent email with the same response as wrong password
+- Locks email after 5 failed attempts for 15 minutes
+- Resets failure counter on successful sign in
+- Blocks IP after 15 total failures across any email within 1 hour
+
+### Password Reset
+- Sends reset email for an existing account
+- Returns same response for non-existent email — no enumeration
+- Rejects expired reset token with clear message and retry option
+- Rejects already-used reset token
+- Invalidates ALL active sessions after successful password reset
+- Rate limits to 3 reset requests per email per hour
+- Invalidates previous reset tokens when a new one is issued
+
+### Password Change (authenticated)
+- Changes password successfully with correct current password
+- Rejects change if current password is wrong
+- Rejects if new password is identical to current password
+- Invalidates all OTHER sessions — keeps current session active
+- Sends notification email after password change
+
+### Email Change
+- Requires re-authentication before initiating change
+- Sends verification link to new email — change does not apply until verified
+- Does not apply change if new email belongs to another account
+- Sends notification to OLD email when change is requested
+- Invalidates ALL sessions after email change is confirmed
+
+### OAuth
+- Creates new account on first OAuth sign-in
+- Signs in existing OAuth user without creating a duplicate account
+- Does not auto-create second account when OAuth email matches an existing password account — prompts to link instead
+- Rejects OAuth callback with mismatched state parameter
+- Handles Apple relay email (privaterelay.appleid.com) as a valid email — does not reject or prompt for real email
+- Stores Apple user name on first sign-in — absent on subsequent sign-ins (only sent once by Apple)
+- Fetches verified primary email from GitHub emails endpoint when profile email is null
+- Redirects Facebook user to complete-profile step when no email is returned
+
+### 2FA
+- Blocks session creation until TOTP code is verified after correct password
+- Creates session after correct TOTP code is entered
+- Rejects incorrect TOTP code
+- Allows sign in with a valid recovery code when authenticator is unavailable
+- Burns recovery code after single use — cannot be reused
+- Generates exactly 8 recovery codes on 2FA setup
+- Invalidates all previous recovery codes when regenerated
+
+### Sessions
+- Refreshes access token using refresh token before expiry
+- Destroys session on sign out
+- Destroys oldest session when the concurrent session limit is exceeded
+- Signs out all other devices while keeping the current session active
+- Enforces absolute 30-day session expiry regardless of activity
+- Requires re-authentication for sensitive actions: password change, email change, account deletion
+- Active sessions list is visible in user security settings
+
+### Route Protection
+- Redirects unauthenticated user to sign-in page
+- Redirects signed-in user away from /sign-in and /sign-up
+- Returns 401 for unauthenticated API and server action calls
+- Returns 403 for authenticated but unauthorized API calls
+- Rejects any request that passes a user ID in the request body — ID must come from session
+- Server actions independently re-validate auth — middleware passing is not sufficient
+- Webhook endpoints bypass session auth and use signature verification instead
+
+### Cross-System Flows (redirect context)
+- User clicks "Choose Plan" while logged out → after login, returns to pricing with the same plan pre-selected, not to the generic dashboard
+- User visits a protected page while logged out → after login, lands on that exact page, not the dashboard
+- User clicks an invite link while not signed up → after registration, lands in the correct workspace, not the homepage
+- User clicks a shared resource link while logged out → after login, sees that resource directly
+- User's session expires while navigating the app → after re-authentication, returns to the page they were on
+- redirectTo param containing an external URL is rejected — only relative app URLs are followed
+- If no redirectTo is present after login, user lands on the default dashboard
+
+### RBAC
+- Returns 403 when member attempts an owner-only action
+- Returns 403 when viewer attempts a write action
+- Enforces role per workspace — admin in one workspace does not grant admin in another
+- RLS blocks query from returning rows belonging to a different workspace
+
+### Account Deletion
+- Cancels Stripe subscription on deletion
+- Destroys all sessions across all devices on deletion
+- Anonymizes shared workspace content — replaces author name with "Deleted User"
+- Requires re-authentication before deletion proceeds
+- Blocks deletion if user is workspace owner — requires ownership transfer first
+- Reactivates account and cancels pending deletion on sign-in during grace period
+
+### Invitations
+- Invite sent to existing user adds them to workspace immediately — no sign-up flow
+- Invite sent to new user auto-joins workspace after account creation
+- Invite token expires after 7 days
 
 ## Edge Cases
 

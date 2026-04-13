@@ -19,9 +19,17 @@ All emails share a common layout — header, content area, footer. Design the la
 **Design decisions:**
 - Build email templates with React Email — they're React components that render to HTML, testable in development, and consistent with your app's component-based approach
 - One shared layout component: logo at the top, content area in the middle, footer with company info, unsubscribe link, and social links at the bottom
-- Email styling uses the same brand colors and typography as the app — users should recognise the email as coming from your product
 - All emails include: your product name and logo, a clear subject line, a primary CTA button where applicable, plain text fallback
 - Test every email in React Email's preview mode, dark mode, and on mobile before deploying
+
+**Design system alignment — mandatory:**
+Every email must pull directly from the design system defined in phase-1/05-design-system.md. Emails are a brand touchpoint — a user should immediately recognise the email as coming from your product.
+- Colours: use the exact primary, surface, and text colour tokens from the design system. No ad-hoc hex values.
+- Typography: use the same type scale and font choices. If the font isn't web-safe, use the fallback stack defined in the design system.
+- Logo: use the logo file specified in phase-1/01-logo.md. Use the version with a transparent background so it works on both light and dark email backgrounds.
+- CTA button: use the primary button colour and border radius from the design system.
+- Spacing: match the spacing scale. Emails should feel like they came from the same product, not a different tool.
+- When the design system is updated, email templates must be updated to match.
 
 ## Email Catalogue
 
@@ -61,6 +69,117 @@ Every transactional email your SaaS needs, grouped by trigger:
 | Email | Trigger | Priority |
 |---|---|---|
 | Feature announcement / changelog | New feature released | `[3]` |
+
+## Email Content Specifications
+
+Each email's required content. These are the minimum fields — do not omit any.
+
+### Auth Emails
+
+**Welcome / verify email**
+- Subject: "Welcome to [Product] — verify your email"
+- Body: one sentence welcome, tell them they need to verify before they can continue, verification link expires in 24 hours
+- CTA: "Verify email"
+- Tone: warm and brief — they just signed up, don't overwhelm them
+
+**Password reset**
+- Subject: "[Product] Reset your password"
+- Body: someone requested a password reset for this account, link expires in 1 hour, if this wasn't them they can ignore it and their password won't change
+- CTA: "Reset password"
+- Tone: neutral and functional — no alarm, no blame
+
+**Email change verification**
+- Subject: "[Product] Confirm your new email address"
+- Body: a request was made to change the account email to [new email address], old email stays active until this is confirmed, link expires in 24 hours
+- CTA: "Confirm new email"
+- Tone: informational
+
+**Password changed notification**
+- Subject: "[Product] Your password was changed"
+- Body: password was changed at [timestamp], device/browser if available, if this wasn't them they should reset their password immediately
+- CTA: "Secure my account" — links to password reset
+- Tone: security alert, factual not alarming
+
+**New device sign-in alert**
+- Subject: "[Product] New sign-in to your account"
+- Body: new sign-in at [timestamp] from [device/browser/location if available], if this wasn't them they should secure their account immediately
+- CTA: "Secure my account" — links to active sessions page
+- Tone: security alert, factual
+
+### Workspace Emails
+
+**Invitation to workspace**
+- Subject: "[Inviter name] invited you to [Workspace] on [Product]"
+- Body: [Name] has invited you to join [Workspace], what the workspace is for if available, invite expires in 7 days, if they don't have an account they'll be prompted to create one
+- CTA: "Accept invitation"
+- Tone: friendly and direct
+
+**Invitation accepted**
+- Subject: "[Member name] joined [Workspace]"
+- Body: [Name] accepted the invitation and joined [Workspace]
+- CTA: "View [Workspace]"
+- Tone: brief, positive notification
+
+### Billing Emails
+
+**Trial expiring — 3 days**
+- Subject: "Your [Product] trial ends in 3 days"
+- Body: trial ends on [date], list of features they'll lose access to on free plan, plan price and billing options, link to add payment method
+- CTA: "Continue with [Product]"
+- Tone: helpful reminder, not pushy
+
+**Trial expiring — 1 day**
+- Subject: "Your [Product] trial ends tomorrow"
+- Body: same as 3-day email but shorter, trial ends tomorrow [date]
+- CTA: "Subscribe now"
+- Tone: more urgent, still not alarming
+
+**Payment receipt**
+- Subject: "[Product] Receipt for [Month Year]"
+- Body: payment of $[amount] received on [date], plan name, billing period (from–to), last 4 digits of card charged, invoice number
+- CTA: "View invoice"
+- Tone: clean, business-like — this is a record-keeping email
+
+**Payment failed**
+- Subject: "[Product] Payment failed — action required"
+- Body: payment of $[amount] failed on [date], last 4 digits of the card on file, number of days before access is suspended, direct link to update payment method
+- CTA: "Update payment method"
+- Tone: matter-of-fact, not alarming — this happens to everyone. Do not use words like "urgent" or "immediately" — just state the facts and the deadline.
+
+**Plan upgraded**
+- Subject: "You're now on [Plan name]"
+- Body: upgrade confirmed, new plan name, new billing amount and cadence, effective date, 2-3 bullet points of what they now have access to (higher limits, new features)
+- CTA: "Explore [Product]"
+- Tone: positive confirmation — make them feel good about the decision
+
+**Plan downgraded**
+- Subject: "[Product] Your plan has been updated"
+- Body: change confirmed, new plan name, when it takes effect, what changes (limits that are lower, features no longer available), note that existing data is preserved
+- CTA: "View your plan"
+- Tone: neutral and informational — acknowledge the change without being negative or guilt-tripping
+
+### Account Emails
+
+**Account deletion confirmation**
+- Subject: "[Product] Account deletion requested"
+- Body: deletion request received, grace period length, exact date the account will be permanently deleted, clear option to cancel the deletion if they change their mind
+- CTA: "Cancel deletion" — make this prominent, not buried
+- Tone: serious but not alarming. Make reversal feel easy.
+
+**Account deletion completed**
+- Subject: "[Product] Your account has been deleted"
+- Body: account permanently deleted on [date], list what was removed, note what was retained for legal purposes (billing history), contact support if this was a mistake
+- No CTA — the account no longer exists
+- Tone: factual and final. No upsell. No "we'll miss you."
+
+### Product Emails
+
+**Feature announcement / changelog**
+- Subject: "[Product] [Feature name] is now available"
+- Body: what it is in one sentence, one key benefit, how to access it
+- CTA: "Try it now"
+- Tone: excited but concise — one feature per email, never bundle announcements
+- Must include unsubscribe link
 
 ## Email Content Rules
 

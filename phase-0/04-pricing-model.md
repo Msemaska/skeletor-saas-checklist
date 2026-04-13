@@ -86,7 +86,7 @@ How you charge for your product. This decision affects everything — feature ga
 **Anchoring rules:**
 - Most popular plan should be in the middle
 - Highlight the plan you want people to pick ("Most Popular" badge)
-- Annual pricing should offer 15-20% discount (2 months free)
+- Annual pricing: always 20% discount (equivalent to ~2.4 months free). Do not offer less — it's the standard user expectation and a meaningful incentive
 - Round numbers feel more approachable ($29 vs $31)
 
 **Psychology:**
@@ -104,7 +104,7 @@ Decisions you need to make now (they affect Stripe integration):
 - Credit card required for trial?
 - What happens when trial ends? (downgrade to free vs lock out)
 - What happens on failed payment? (grace period length)
-- Proration on mid-cycle upgrade/downgrade?
+- Proration: payment always happens at time of decision. Monthly→Annual same plan: charge annual now, annual starts after current month ends. Monthly→Annual upgrade: full proration, starts immediately. See phase-9/02-stripe-architecture.md for all four cases.
 - Refund policy? (no refunds, prorated, 30-day money-back)
 - Per-seat pricing or per-account?
 - Usage overage handling? (hard limit until top-up, auto-top-up, throttle)

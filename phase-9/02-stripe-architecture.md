@@ -99,6 +99,8 @@ Trial → Active → Cancelled
 
 Use Stripe Checkout (redirect to Stripe-hosted page) for the initial subscription. Don't build a custom payment form.
 
+**Auth interruption during checkout:** If the user selects a plan while logged out, the auth middleware handles getting them back — the pricing page URL with the selected plan as a query param is preserved through the login flow and the user returns to it after sign-in. This is covered in phase-3/03-auth.md under Middleware. The Stripe checkout flow only starts once the user is authenticated.
+
 **Design decisions:**
 - Stripe Checkout handles PCI compliance, payment method entry, and SCA (Strong Customer Authentication) for European cards
 - The flow: user clicks "Subscribe" → your app creates a Checkout Session → user is redirected to Stripe Checkout → user pays → Stripe redirects back to your app with a success URL → your webhook receives `checkout.session.completed` → link the subscription to the workspace
@@ -118,28 +120,89 @@ Plans and prices are defined in Stripe, not in your code.
 
 ## Proration
 
-When a user upgrades or downgrades mid-billing-cycle, the charge is prorated.
+The core principle: **payment happens at the time of the decision, not at the start of the next period. Always charge immediately. Always be fair to the user.**
 
-**Design decisions:**
-- Use Stripe's built-in proration (proration_behavior: create_prorations)
-- On upgrade: user is charged the prorated difference immediately for the rest of the current period
-- On downgrade: credit is applied to the next invoice
-- Show the prorated amount to the user before they confirm the plan change — use Stripe's upcoming invoice preview API
+There are four distinct scenarios. Each is handled differently.
+
+### Case 1: Monthly → Annual (same plan, cadence switch only)
+
+The user is on Pro Monthly and switches to Pro Annual mid-cycle. They've already paid for the current month.
+
+**Rules:**
+- Charge the full annual price immediately
+- The annual billing cycle starts at the end of the current monthly period — not from today
+- The user does not lose the days they already paid for on the monthly plan
+- No proration credit for remaining monthly days — they keep those days, annual starts after them
+- Show the user: "You'll be charged [annual price] now. Your annual plan starts on [date]."
+- Implementation: charge the annual price via an immediate invoice item, then schedule the subscription price change to take effect at `billing_cycle_anchor = current_period_end` with `proration_behavior: 'none'` — the separate invoice handles the immediate charge
+
+### Case 2: Monthly (smaller plan) → Annual (bigger plan) — upgrade + cadence change
+
+The user is on Starter Monthly and switches to Pro Annual mid-cycle. Both the plan and the cadence change.
+
+**Rules:**
+- Credit the remaining unused days on Starter Monthly
+- Charge the full annual Pro price immediately (minus the credit)
+- The annual Pro subscription starts immediately from the time of payment — not at the end of the current period
+- Rationale: the user is accessing better features immediately, so the upgrade begins now
+- Implementation: standard Stripe proration with `billing_cycle_anchor: 'now'` and `proration_behavior: 'create_prorations'`
+- Show the user the prorated breakdown before confirming — use Stripe's upcoming invoice preview API
+
+### Case 3: Annual → Annual (plan upgrade or downgrade, same cadence)
+
+- **Upgrade:** credit remaining time on old annual plan, charge the difference immediately, new plan starts now
+- **Downgrade:** credit is applied to the next annual invoice — access to the current plan continues until the annual period ends, no immediate charge
+
+### Case 4: Annual → Monthly (cadence downgrade)
+
+- The monthly billing takes effect at the end of the current annual period — the user already paid for the year
+- No immediate charge or credit
+- Access continues on the annual plan until the annual period ends
+
+### General Rules
+
+- Always show the user the charge amount before they confirm — use Stripe's upcoming invoice preview API for all cases
+- If there is a charge, it happens at the time of the decision — never defer to the next billing cycle
+- Credits always apply to the next invoice, never as cash refunds
+- Never use `proration_behavior: 'none'` for plan upgrades — only for Case 1 (cadence switch) where the annual charge is handled via a separate immediate invoice item
 
 ## What to Test
 
-- Webhook signature verification rejects invalid signatures
-- Webhook deduplication prevents duplicate processing of the same event
-- Each webhook event type triggers the correct handler
-- Subscription creation links the subscription to the correct workspace
-- Plan change updates the plan name on the workspace
-- Cancellation applies free tier limits after the billing period ends
-- Invoice paid resets usage counters
-- Payment failed sends the correct email
-- Trial expiring sends the email 3 days before trial ends
-- Checkout flow redirects correctly and handles the success callback
-- Proration amount is calculated correctly on plan change
-- Unknown event types are logged and skipped (not rejected)
+### Webhook Security
+- Rejects webhooks with an invalid Stripe signature
+- Rejects webhooks with a missing Stripe-Signature header
+- Processes webhooks with a valid signature
+- Deduplicates webhook events — same event ID is processed only once
+- Logs and skips unknown event types — does not throw or return 4xx (which would cause Stripe to retry indefinitely)
+
+### Subscription Lifecycle Webhooks
+- checkout.session.completed: creates subscription record linked to the correct workspace
+- customer.subscription.updated: updates plan name on workspace when plan changes
+- customer.subscription.deleted: applies free tier limits after billing period ends — not immediately
+- invoice.paid: resets usage counters for the new billing period
+- invoice.payment_failed: sends dunning email and marks subscription as past_due
+- customer.subscription.trial_will_end: sends trial expiring email 3 days before trial end
+
+### Checkout
+- Checkout session includes correct price ID, customer ID, and workspace ID in metadata
+- Successful checkout redirects to success URL
+- Cancelled checkout redirects to cancel URL without creating a subscription
+- Existing Stripe customer is reused on subsequent checkouts — no duplicate customers created
+- Workspace stores Stripe customer ID after first checkout
+
+### Plan Changes
+- Upgrade (same cadence): workspace plan updates immediately after webhook fires
+- Downgrade (same cadence): workspace retains current plan until next billing period
+- Monthly → Annual (same plan): annual price charged immediately, annual cycle starts at end of current monthly period — not today
+- Monthly → Annual (bigger plan): prorated credit applied for remaining monthly days, annual upgrade starts immediately
+- Annual → Annual upgrade: remaining time credited, difference charged immediately, new plan starts now
+- Annual → Annual downgrade: credit applied to next annual invoice, no immediate charge, access continues
+- Annual → Monthly: no immediate charge, monthly takes effect at end of annual period
+- Proration preview shown to user before confirmation matches the charge actually made
+
+### Customer Management
+- Stripe customer is created when workspace initiates first checkout
+- No duplicate Stripe customers created for the same workspace
 
 ## Edge Cases
 

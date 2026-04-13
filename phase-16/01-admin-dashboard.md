@@ -86,14 +86,34 @@ Every admin action is logged.
 
 ## What to Test
 
-- Admin dashboard is only accessible to system-level admin users
-- Non-admin users get redirected or see a 403 when accessing /app/admin/*
-- User and workspace lists are searchable and show correct data
-- Impersonation creates a session as the target user with the banner visible
-- Impersonation is logged in the audit trail
-- Exit impersonation returns to the admin dashboard
-- Data export generates a complete JSON file for the target user
-- Billing overrides through Stripe Dashboard trigger webhooks that update the database correctly
+### Access Control
+- Admin routes return 403 for authenticated non-admin users
+- Admin routes redirect to sign-in for unauthenticated users
+- Admin role is enforced server-side — cannot be bypassed via client manipulation
+
+### User & Workspace Management
+- User search returns matches by email, name, and ID
+- User detail page shows correct plan, usage counts, and workspace memberships
+- Workspace list shows correct member count, plan, and billing status
+- Manually disabling a user blocks their subsequent sign-in
+
+### Impersonation
+- Impersonation creates a session scoped to the target user
+- Impersonation banner is visible throughout the session
+- Impersonated session has the target user's permissions — not admin permissions
+- Impersonated user cannot access admin dashboard routes
+- Impersonation start is logged in the audit trail with admin ID, target user ID, and timestamp
+- Actions taken while impersonating are attributed to the target user in audit logs
+- Exit impersonation destroys the impersonated session and returns to admin dashboard
+
+### Data Export
+- Export generates complete JSON including profile, workspace data, and billing history
+- Export excludes password hashes, session tokens, and internal system fields
+- Export action is logged in the audit trail
+
+### Billing Overrides
+- Manual subscription change via Stripe Dashboard triggers webhook and updates workspace plan in database
+- Manual refund via Stripe Dashboard does not break subscription state
 
 ## Edge Cases
 

@@ -100,17 +100,39 @@ Test clocks let you simulate the passage of time in test mode — advancing hour
 
 ## What to Test
 
-- Checkout Session creation redirects to Stripe correctly
-- Successful payment triggers `checkout.session.completed` webhook and links subscription
-- Declined card shows appropriate error and doesn't create a subscription
-- Upgrade changes plan and creates proration
-- Downgrade takes effect at end of period, not immediately
-- Cancellation retains access until period end
-- Payment failure triggers email and dunning flow
-- Trial expiry triggers trial expiring email at 3 days
-- Trial end without payment method cancels subscription and revokes paid access
-- Webhook deduplication prevents double-processing
-- All webhook handlers process test events correctly
+### Checkout
+- Card 4242 4242 4242 4242: checkout completes, subscription created, workspace plan updated
+- Card 4000 0000 0000 0002 (generic decline): checkout shows error, no subscription created
+- Card 4000 0000 0000 9995 (insufficient funds): checkout shows appropriate error, no subscription created
+- Checkout abandoned (user clicks back): no subscription created, workspace plan unchanged
+- Card 4000 0025 0000 3155 (3DS required): 3DS challenge appears and completes successfully
+- Card 4000 0000 0000 3220 (3DS fails): authentication fails, no subscription created
+
+### Plan Changes
+- Monthly → Annual (same plan): annual price charged immediately, subscription period changes to annual starting at end of current monthly period — user does not lose remaining monthly days
+- Monthly (smaller) → Annual (bigger): prorated credit applied for remaining monthly days, annual subscription starts immediately, charge matches upcoming invoice preview
+- Annual → Annual upgrade: credit for remaining annual time applied, difference charged immediately, new plan active now
+- Annual → Annual downgrade: no immediate charge, credit applied to next annual invoice, access continues until annual period ends
+- Annual → Monthly: no immediate charge, monthly takes effect at next annual renewal
+- Downgrade (same cadence): plan change takes effect at next billing period, not immediately
+- Cancel subscription: access retained until period end, workspace shows cancellation date
+- Proration preview displayed to user before confirmation matches the actual charge
+
+### Payment Failure & Dunning
+- Card 4000 0000 0000 0341 (attaches but charge fails): invoice.payment_failed webhook fires
+- Payment failure: dunning email sent to workspace owner
+- Payment failure: subscription status set to past_due
+- Payment recovery: subscription returns to active after successful retry charge
+
+### Trial
+- Trial created with correct end date
+- Trial expiring email sent 3 days before end (verified via test clock)
+- Trial ends with payment method: subscription continues, first invoice charged
+- Trial ends without payment method: subscription cancelled, paid access revoked
+
+### Webhook Integrity
+- Webhook deduplication prevents double-processing when same event fires twice
+- All webhook handlers process test events without errors
 
 ## Edge Cases
 
