@@ -79,10 +79,10 @@ After launch, work through `[3]` items based on what the business needs. These a
 
 When you start building a feature, give the AI the relevant deep-dive file as context:
 
-- Building auth → provide `phase-3/03-auth.md`
-- Setting up Stripe → provide `phase-9/02-stripe-architecture.md`
-- Creating the blog → provide `phase-14/04-blog-posts.md`
-- Deploying to Railway → provide `phase-7/01-containerization.md` through `phase-7/11-dependency-scanning.md`
+- Building auth → provide `phase-3-core-product/03-auth.md`
+- Setting up Stripe → provide `phase-9-business-wrapper/02-stripe-architecture.md`
+- Creating the blog → provide `phase-14-content/04-blog-posts.md`
+- Deploying to Railway → provide `phase-7-infrastructure/01-containerization.md` through `phase-7-infrastructure/11-dependency-scanning.md`
 
 The AI gets the architecture, design decisions, edge cases, what to test, security considerations, and common mistakes — all in one file. No improvisation needed.
 
@@ -146,7 +146,7 @@ When starting a new SaaS project with Skeletor, the AI handles the code — but 
 | Design logo and brand assets | Phase 1 | Use Claude to generate SVG |
 | Write value proposition and copy bank | Phase 0 + 14 | Fill in docs/copy-bank.md |
 | Configure Stripe products and prices | Phase 9 | Create in test mode first |
-| Set up DNS records (SPF, DKIM, DMARC) | Phase 12 | Follow phase-12/01-email-infrastructure.md |
+| Set up DNS records (SPF, DKIM, DMARC) | Phase 12 | Follow phase-12-email-domain/01-email-infrastructure.md |
 | Submit Google OAuth consent screen for verification | Phase 3 | Takes 2-4 weeks — start early |
 | Start domain warming | Phase 12 | 4 weeks before launch |
 | Submit to BetaList and directories | Phase 15 | 3 weeks before launch |

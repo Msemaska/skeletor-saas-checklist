@@ -17,6 +17,7 @@ Ordered from foundational to nice-to-have.
 4. `[1]` Pricing model (free trial, freemium, flat, tiered, usage-based)
 5. `[1]` Domain purchased — **Cloudflare Registrar**
 6. `[1]` Business name finalized
+7. `[1]` Discounting strategy (when, how much, annual, launch, win-back, enterprise, Stripe coupons) — **Custom policy**
 
 ## Phase 1: Brand Foundation
 
@@ -55,6 +56,9 @@ Ordered from foundational to nice-to-have.
 2. `[3]` API documentation & explorer — **Fumadocs + Scalar**
 3. `[3]` Webhook system (event delivery to customers, idempotency) — **Svix + Custom**
 4. `[3]` SDKs / client libraries — **openapi-typescript**
+5. `[3]` MCP server (expose product capabilities to AI assistants and agents) — **MCP TypeScript SDK**
+6. `[3]` CLI (developer-facing command-line interface for power users and automation) — **Commander.js**
+7. `[3]` Native integrations (connect to tools users already work in — Zapier, Make, n8n) — **Zapier Developer Platform + Make SDK**
 
 ## Phase 5: UI/UX
 
@@ -65,12 +69,13 @@ Ordered from foundational to nice-to-have.
 5. `[1]` Overlays & feedback (toasts, modals, dialogs, confirmation) — **Sonner + Shadcn Dialog**
 6. `[1]` Onboarding (first-run wizard, tooltip tour, progressive disclosure) — **Custom (Next.js + Zustand) + Onborda**
 7. `[1]` Localization & formatting (currency, timezone, date) — **Intl.NumberFormat + date-fns + date-fns-tz**
+8. `[1]` Component inventory (primitive install list, composite components for app shell, auth, billing, data display, marketing) — **Shadcn + MagicUI**
 
 ## Phase 6: Marketing Site & Technical SEO
 
 1. `[2]` Marketing site pages (landing, features, pricing, FAQ, about, branding, contact, waitlist, blog) — **Next.js + MagicUI + Shadcn + MDX**
 2. `[2]` Technical SEO (meta tags, OG images, sitemap, robots.txt, canonical URLs, alt text) — **Next.js Metadata API + next-sitemap + @vercel/og**
-3. `[2]` Blog scheduling (publishedAt date, auto-publish via ISR) — **Next.js + MDX**
+3. `[2]` Blog system (MDX pipeline, scheduling, search, TOC, related posts, Article schema, OG images, Pagefind) — **next-mdx-remote + Shiki + Pagefind + @vercel/og**
 4. `[3]` Post-launch pages (comparison, use case, demo/screenshots) — **Next.js**
 
 ## Phase 7: Infrastructure
@@ -165,3 +170,4 @@ Ordered from foundational to nice-to-have.
 ## Phase 19: App Store & Marketplace Listings (if applicable)
 
 1. `[3]` App store & marketplace listings (Chrome, Slack, Shopify, packaging, assets, review timelines) — **Plasmo + Claude + @vercel/og**
+2. `[3]` IDE extensions (VS Code, JetBrains — surface product inside the developer's editor) — **VS Code Extension API + JetBrains Plugin SDK**

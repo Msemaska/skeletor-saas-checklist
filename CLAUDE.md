@@ -98,36 +98,36 @@ When creating or updating deep-dive files, search the web for current best pract
 ```
 ├── saas-launch-checklist.md          # Master checklist — all phases, all items
 ├── CLAUDE.md                         # This file — repo rules
-├── phase-0/                          # Strategy & Positioning
+├── phase-0-strategy-positioning/                          # Strategy & Positioning
 │   ├── 01-value-proposition.md
 │   ├── 02-ideal-customer-profile.md
 │   ├── 03-competitor-analysis.md
 │   ├── 04-pricing-model.md
 │   ├── 05-domain.md
 │   └── 06-business-name.md
-├── phase-1/                          # Brand Foundation
+├── phase-1-brand-foundation/                          # Brand Foundation
 │   ├── 01-logo.md
 │   ├── 02-color-palette.md
 │   ├── 03-typography.md
 │   ├── 04-favicon-and-app-icons.md
 │   └── 05-design-system.md
-├── phase-2/                          # Testing
+├── phase-2-testing/                          # Testing
 │   ├── 01-test-infrastructure.md
 │   ├── 02-unit-integration-testing.md
 │   ├── 03-component-testing.md
 │   ├── 04-e2e-testing.md
 │   └── 05-performance-cross-browser.md
-├── phase-3/                          # Core Product
+├── phase-3-core-product/                          # Core Product
 │   ├── 01-database-schema.md
 │   ├── 02-validation.md
 │   ├── 03-auth.md
 │   ├── 04-data-access.md
 │   ├── 05-cache.md
 │   └── ... (remaining items 06-12)
-├── phase-4/                          # Public/Customer API
-├── phase-5/                          # UI/UX
-├── phase-6/                          # Marketing Site
-├── phase-7/                          # Infrastructure (Railway, Neon, R2, DNS)
+├── phase-4-public-api/                          # Public/Customer API
+├── phase-5-ui-ux/                          # UI/UX
+├── phase-6-marketing-site/                          # Marketing Site
+├── phase-7-infrastructure/                          # Infrastructure (Railway, Neon, R2, DNS)
 └── ...                               # Phases 8-19
 ```
 
