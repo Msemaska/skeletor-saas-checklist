@@ -47,6 +47,27 @@ Keep the JavaScript bundle small for fast page loads.
 - Investigate any single chunk larger than 50KB — lazy-load it
 - Check bundle size before merging PRs that add new dependencies
 
+### Network Throttling
+
+Test critical flows under a slow network. A wired dev connection hides behaviour that breaks on hotel wifi, congested cell networks, and underground trains — and that's where users actually use the product.
+
+**Design decisions:**
+- Manual smoke test of critical flows in Chrome DevTools "Slow 4G" preset before every launch and before any release that touches a critical path
+- Critical flows to throttle: sign-up, sign-in, primary product action (the activation/aha-moment flow), checkout/payment, file upload (if applicable)
+- One Playwright spec runs the critical paths under throttled conditions in CI — uses CDP `emulateNetworkConditions` with the Slow 4G profile (~400 Kbps down, ~400 Kbps up, 400ms RTT)
+- Lighthouse already runs throttled (Slow 4G) in CI — that's the automated regression baseline. The manual pass and the Playwright pass cover behaviour Lighthouse can't measure (loading states, double-submits, error UX, optimistic UI)
+- Test on real mobile data, not just emulated throttling, before launch — emulators don't reproduce packet loss, jitter, or carrier-level captive portals
+
+**What to verify under throttling:**
+- Every async action shows a loading state within 100ms of the trigger — no "did I click it?" moments
+- Submit buttons disable on click and stay disabled until success or error — no double-submits
+- Skeletons render for every async data fetch, not just some
+- Optimistic UI that gets reverted on error reverts cleanly, not with a flicker
+- Suspense boundaries show a fallback, not a broken section
+- Image and font loading does not cause visible layout shift (CLS near zero even on slow load)
+- Every async action has a request timeout (default 30s) that surfaces an error state — no infinite spinners
+- Retry logic for transient failures is idempotent — retrying does not double-charge, double-submit, or duplicate rows
+
 ## Cross-Browser Testing
 
 ### Browser Matrix
@@ -98,6 +119,9 @@ Focus on things that differ between browsers:
 - 95th percentile response time under 200ms at 100 concurrent users
 - Slowest database queries under 100ms
 - All E2E critical paths pass on Chromium, Firefox, and WebKit
+- Critical paths complete under Slow 4G throttling with a visible loading state within 100ms of every async trigger
+- No critical-path form is double-submittable under slow network
+- Every async action either resolves or surfaces an error state — no infinite spinners
 - Mobile layout correct at all Tailwind breakpoints
 - Sidebar drawer works on mobile
 - Tables convert to cards on mobile
@@ -112,6 +136,9 @@ Focus on things that differ between browsers:
 - **Mobile viewport height issue** — `100vh` on mobile Safari includes the address bar, causing content to overflow. Use `100dvh` (dynamic viewport height) instead.
 - **Touch target too small** — buttons and links must be at least 44x44px for comfortable touch interaction. Check interactive elements on mobile.
 - **Font loading causes layout shift** — if web fonts load after the initial render, text reflows and the layout shifts. Verify that `next/font` is configured correctly and CLS (Cumulative Layout Shift) is near zero.
+- **User clicks submit twice on a slow network** — the spinner is too subtle or appears too late, so the user clicks again. Disable the submit button on click and re-enable only after success or error. Verify under Slow 4G — fast-network testing won't reproduce this.
+- **Spinner runs forever because the request silently failed** — without a timeout, a dropped connection leaves a spinner spinning. Every async action needs a timeout (default 30s) that flips to an error state with a retry option.
+- **Optimistic UI flickers on slow networks** — the optimistic state renders, the request takes 4 seconds, then the real state replaces it visibly. Either commit fully on success or animate the transition. Verify under throttling.
 
 ## Implementation Checklist
 
@@ -125,6 +152,12 @@ Focus on things that differ between browsers:
 - [ ] All queries under 100ms (or investigated and optimized)
 - [ ] Bundle analyzer run, total first-load JS under 200KB compressed per page
 - [ ] No single chunk larger than 50KB without justification
+- [ ] Manual Slow 4G smoke test of every critical flow before launch (sign-up, sign-in, primary product action, checkout, file upload)
+- [ ] Playwright spec runs critical paths under CDP network throttling in CI
+- [ ] Every critical-path async action verified to show a loading state within 100ms
+- [ ] Every critical-path form verified non-double-submittable under throttling
+- [ ] Request timeout configured for every async action (default 30s) with error UI on timeout
+- [ ] Real-device test on mobile data (not just emulated throttling) before launch
 
 ### Cross-Browser
 - [ ] Playwright E2E tests run against Chromium, Firefox, and WebKit in CI
@@ -146,3 +179,7 @@ Focus on things that differ between browsers:
 - Hover-dependent features with no touch alternative (tooltips on desktop, nothing on mobile)
 - No Lighthouse in CI (performance degrades gradually, nobody notices until users complain)
 - Testing old browser versions (wasting time on browsers nobody uses)
+- Only testing on a fast wired connection (the app feels broken on hotel wifi, mobile data, or congested networks — and that's where most real users actually are)
+- Spinners with no timeout (slow network → infinite spinner → user assumes the app is dead and refreshes, losing their work)
+- Forms that allow double-submit on slow networks (user clicks twice because the spinner is invisible — payment fires twice, signup fires twice, row gets duplicated)
+- Treating Lighthouse's throttled run as the only network test (Lighthouse measures load metrics, not interaction behaviour — it won't catch double-submits or infinite spinners)

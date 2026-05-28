@@ -14,6 +14,13 @@ The technical system that powers your public blog — content storage, rendering
 
 **Scheduling:** Set a future `publishedAt` date in frontmatter. ISR revalidates blog pages every hour — posts go live automatically at the next revalidation after their scheduled date, with no redeploy needed. Maximum delay: 59 minutes. Acceptable for a solo publishing workflow.
 
+**Publishing pipeline:** Every time a post goes live, three indexing actions must fire — ping Google to re-fetch the sitemap, call the Google Indexing API with the post URL, and submit the URL to IndexNow. These actions have two triggers depending on how the post was published:
+
+- **Deploy-time posts** (publishedAt in the past when deployed) — `instrumentation.ts` fires on server start and handles all three actions for the full sitemap. New posts are covered automatically.
+- **ISR-scheduled posts** (publishedAt is a future date, goes live via revalidation) — `instrumentation.ts` has already run and won't re-fire. A Trigger.dev scheduled job runs hourly, compares the list of currently-live posts against a previously stored snapshot, and fires all three indexing actions for any newly-live post. The snapshot is stored in the database.
+
+Never rely on manual Search Console submission — it hits rate limits fast and doesn't scale beyond a handful of URLs.
+
 **Routing:** `app/(marketing)/blog/page.tsx` for the index, `app/(marketing)/blog/[slug]/page.tsx` for individual posts. Slugs are derived from the filename (`my-post-title.mdx` → `/blog/my-post-title`).
 
 **Search:** Pagefind. Generates a static full-text search index at build time from the rendered HTML. Zero infra, zero runtime cost, works offline. Integrated as a client component with a search modal.
@@ -71,7 +78,7 @@ A post is visible when: `draft === false` AND `publishedAt <= now`.
 │       ├── PostHeader.tsx            # Title, date, author, reading time
 │       ├── TableOfContents.tsx       # Sticky TOC sidebar
 │       ├── RelatedPosts.tsx          # 3 related posts at bottom
-│       ├── ShareButtons.tsx          # Social share links
+│       ├── ShareButtons.tsx          # Twitter/X, LinkedIn, Facebook, Reddit, WhatsApp, copy link
 │       ├── NewsletterCta.tsx         # Email capture block mid-post
 │       ├── BlogSearch.tsx            # Pagefind search modal
 │       └── mdx/
@@ -134,7 +141,7 @@ Every post must contain at least 3 internal links — to other blog posts or pro
 ### E-E-A-T Signals
 
 - Author name displayed on every post
-- Author bio section at the bottom of each post (name, credentials, one-line description)
+- `AuthorCard` component at the bottom of every post. Contains: avatar, full name, title/credentials, 2–3 sentence bio, links to Twitter/X and LinkedIn. Author data lives in a static `authors.ts` config file — not in frontmatter — so it stays consistent across all posts and only needs updating in one place. Multiple authors on a single post are supported (co-authored content). No dedicated author page — the card is the full author presence.
 - `updatedAt` date shown on posts that have been refreshed — signals freshness to Google
 - Original data, statistics, or first-hand experience in every post — not rehashed generic content
 
@@ -207,13 +214,16 @@ Every post must contain at least 3 internal links — to other blog posts or pro
 - [ ] `@vercel/og` OG image route per post (`opengraph-image.tsx`)
 - [ ] Blog posts included in `next-sitemap` with `lastmod` and `priority`
 - [ ] Author bio section on every post
+- [ ] `instrumentation.ts` pings Google sitemap, calls Indexing API, and submits to IndexNow on every production deploy
+- [ ] Trigger.dev hourly job detects newly-live scheduled posts and fires all three indexing actions
+- [ ] Post snapshot stored in database for the Trigger.dev job to diff against
 
 ### Components
 - [ ] `PostCard` — used on index, featured section, related posts
 - [ ] `PostHeader` — title, author, date, reading time, tags
 - [ ] `TableOfContents` — sticky desktop, collapsible mobile
 - [ ] `RelatedPosts` — 3 posts by tag matching
-- [ ] `ShareButtons` — Twitter/X, LinkedIn, copy link
+- [ ] `ShareButtons` — Twitter/X, LinkedIn, Facebook, Reddit, WhatsApp, copy link
 - [ ] `NewsletterCta` — mid-post and end-of-post email capture
 - [ ] `BlogSearch` — Pagefind modal triggered by search icon
 - [ ] `MDXImage`, `Callout`, `CodeBlock` custom MDX components

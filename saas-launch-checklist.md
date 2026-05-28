@@ -18,6 +18,7 @@ Ordered from foundational to nice-to-have.
 5. `[1]` Domain purchased — **Cloudflare Registrar**
 6. `[1]` Business name finalized
 7. `[1]` Discounting strategy (when, how much, annual, launch, win-back, enterprise, Stripe coupons) — **Custom policy**
+8. `[1]` User journey map (trigger, evaluation, sign-up, activation/aha moment, habit, expansion) — **Custom (per ICP)**
 
 ## Phase 1: Brand Foundation
 
@@ -137,6 +138,7 @@ Ordered from foundational to nice-to-have.
 11. `[3]` Video content (product tutorials, feature updates, podcast guest appearances) — **Screen Studio + YouTube**
 12. `[3]` Content operations (editorial calendar, repurposing workflow, distribution schedule) — **Notion + Claude + Postiz (self-hosted) + Resend**
 13. `[3]` LLM optimization (monitoring mentions, third-party reviews, structured content for AI citation) — **Manual + G2 + Capterra**
+14. `[3]` Free utility tools (mini-tools tangential to the product as SEO/lead-gen assets — sitemap crawlers, validators, generators) — **Next.js + Server Actions + Upstash Ratelimit**
 
 ## Phase 14: Go-To-Market
 
@@ -145,6 +147,7 @@ Ordered from foundational to nice-to-have.
 3. `[2]` Email marketing (newsletter signup, welcome drip, launch announcement) — **Resend**
 4. `[3]` Paid ads (platforms, budgets, targeting, landing pages) — **Google Ads + Meta Ads**
 5. `[3]` Post-launch distribution (niche directories, guest posts, awesome-lists) — **Manual**
+6. `[2]` Brand entity footprint (schema.org Organization, social/Web2 brand reservation, SaaS directory citations, press releases, llms.txt) — **Manual + EIN Presswire**
 
 ## Phase 15: Admin & Operations
 

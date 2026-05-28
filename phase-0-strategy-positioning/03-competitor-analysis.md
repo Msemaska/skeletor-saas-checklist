@@ -41,9 +41,9 @@ For each direct competitor, document:
 **Founded / Funding:** [Startup vs established?]
 ```
 
-### Step 3: Feature Comparison Matrix
+### Step 3: Internal Positioning Matrix
 
-Create a simple table:
+This is an internal analysis artifact, not a published page. Public-facing comparison pages and tables are built in Phase 6 (marketing site) and Phase 14 (content) using this analysis as input.
 
 | Feature | You | Competitor A | Competitor B | Competitor C |
 |---|---|---|---|---|
@@ -84,7 +84,7 @@ You can have secondary differentiators, but lead with one.
 
 | Output | Use |
 |---|---|
-| Feature comparison matrix | Pricing page, comparison blog posts |
+| Internal positioning matrix | Input for Phase 6 pricing-page comparison table and Phase 14 comparison content |
 | Competitor weaknesses | Marketing copy angles |
 | Positioning angle | One-liner, hero copy, everywhere |
 | Gap analysis | Feature roadmap prioritization |
@@ -94,10 +94,9 @@ You can have secondary differentiators, but lead with one.
 
 - [ ] 3-5 direct competitors identified and analyzed
 - [ ] 2-3 indirect alternatives documented
-- [ ] Feature comparison matrix created
+- [ ] Internal positioning matrix created
 - [ ] Top 3 competitor weaknesses / gaps identified
 - [ ] Primary positioning angle chosen
-- [ ] Comparison page drafts (for Phase 14: Content)
 
 ## Common Mistakes
 

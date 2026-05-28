@@ -52,7 +52,8 @@ The project is structured as a phased checklist with deep-dive reference files:
 1. **Clone this repo** as the foundation for your new project. Don't modify the original — it's your reusable template.
 2. **Work through Phase 0** — fill in your specific strategy: value proposition, ICP, competitors, pricing, domain, name.
 3. **Create your product-specific docs** — `docs/copy-bank.md` and `docs/keyword-research.md` are outputs you create for each product.
-4. **Work in three passes** — not phase by phase, but priority by priority (see below).
+4. **Generate PROGRESS.md** — before writing any code, the AI reads `saas-launch-checklist.md`, determines which phases apply based on project type (see the project type table in `CLAUDE.md`), and generates a `PROGRESS.md` in the project root. This is the single task list for the entire build. See the PROGRESS.md section below.
+5. **Work in three passes** — not phase by phase, but priority by priority (see below).
 
 ### Three-Pass Workflow
 
@@ -74,6 +75,53 @@ After launch, work through `[3]` items based on what the business needs. These a
 **Why this order works:** phases are already ordered by dependency (database before auth, auth before billing). Following the phase order within each pass prevents race conditions. Pass 1 builds everything Pass 2 needs to verify and polish. Pass 2 prepares everything Pass 3 needs to grow.
 
 **Parallel work during each pass:** while the AI is building `[1]` items, the human works through the Human Task List below — registering for services, collecting API keys, recording videos, writing copy. The AI and human work in parallel, not sequentially.
+
+### PROGRESS.md
+
+PROGRESS.md is the single source of truth for what has been done and what is next on a given project. It is generated once at the start of the project and maintained throughout the build. It is not a summary — it is a structured task list where every item links back to the original deep-dive file that contains the full design decisions, edge cases, security considerations, and implementation checklist for that task.
+
+**Why it exists:** Without it, every new AI session re-reads the master checklist from scratch, re-determines scope, and risks missing or reordering tasks. PROGRESS.md gives any session — new or resumed — an immediate answer to "what has been done and what is next," without losing the reference to the source files that make the work deterministic.
+
+**Format — each line is:**
+```
+- [ ] `[1]` Item description — `phase-X-name/NN-filename.md`
+```
+
+The checkbox tracks completion. The priority marker (`[1]`, `[2]`, `[3]`) places the item in the correct pass. The file reference is the exact deep-dive file the AI must read before starting that task — not a summary, the actual file.
+
+**Example:**
+```
+## Pass 1 — Build
+
+- [ ] `[1]` Database schema — `phase-3-core-product/01-database-schema.md`
+- [ ] `[1]` Validation strategy — `phase-3-core-product/02-validation.md`
+- [ ] `[1]` Auth — `phase-3-core-product/03-auth.md`
+- [x] `[1]` Test infrastructure — `phase-2-testing/01-test-infrastructure.md`
+
+## Pass 2 — Launch Prep
+
+- [ ] `[2]` Marketing site pages — `phase-6-marketing-site/01-marketing-site-pages.md`
+- [ ] `[2]` Technical SEO — `phase-6-marketing-site/02-technical-seo.md`
+
+## Pass 3 — Post-Launch
+
+- [ ] `[3]` Referral program — `phase-17-growth-retention/02-referral-program.md`
+```
+
+**Rules for generating PROGRESS.md:**
+- Read `saas-launch-checklist.md` in full first
+- Determine project type and exclude phases that don't apply (internal tool skips Phase 0, Phase 1, Phase 6, Phase 8+ as per the table in `CLAUDE.md`)
+- Every included checklist item gets one line — no grouping, no summarising
+- Items with no deep-dive file (e.g. "Domain purchased") get the checklist phase reference instead: `phase-0-strategy-positioning/`
+- Split into three sections: Pass 1, Pass 2, Pass 3 — matching the `[1]`, `[2]`, `[3]` markers
+- Order within each pass follows phase order (phase 0 before phase 1, etc.) to respect dependencies
+
+**Rules for using PROGRESS.md:**
+- Before starting any task, read the referenced deep-dive file in full — not just the checklist item description
+- The deep-dive file is the authoritative source. PROGRESS.md only points to it — it does not replace it
+- Mark a task `[x]` only when the implementation checklist inside the deep-dive file is fully complete
+- Never reorder tasks within a pass — the phase order is intentional
+- When resuming a session, read PROGRESS.md first to establish current state before doing anything else
 
 ### Working with AI
 
