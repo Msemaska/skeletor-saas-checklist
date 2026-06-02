@@ -38,7 +38,7 @@ Use a dedicated Discord server. Create separate channels for different alert sev
 
 **UptimeRobot:** UptimeRobot supports webhook notifications. Configure webhooks to post to Discord when monitors go down or recover.
 
-**Stripe:** Stripe doesn't have native Discord integration. Use a lightweight webhook relay: Stripe sends webhooks to your API, your webhook handler posts to Discord for events that need attention (payment failures, disputes, new subscriptions). This happens in the same webhook handler that processes billing events (phase-9-business-wrapper/02-stripe-architecture.md).
+**Stripe:** Stripe doesn't have native Discord integration. Use a lightweight webhook relay: Stripe sends webhooks to your API, your webhook handler posts to Discord for events that need attention (payment failures, disputes, new subscriptions). This happens in the same webhook handler that processes billing events (phase-8-business-wrapper/02-stripe-architecture.md).
 
 **Background jobs:** Trigger.dev has webhook/notification support for failed jobs. Configure it to post to the alerting channel on final failure (after all retries exhausted).
 

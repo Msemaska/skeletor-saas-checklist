@@ -67,7 +67,7 @@ The most complex and most powerful security header. Controls which sources of co
 - Headers apply to all routes by default — you can scope them to specific paths if needed
 
 **In Caddy (self-hosted only):**
-- HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, and Permissions-Policy can also be set in Caddy (covered in phase-7-infrastructure/02-reverse-proxy.md)
+- HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, and Permissions-Policy can also be set in Caddy
 - If both Caddy and Next.js set the same header, the last one wins (usually Next.js since Caddy proxies to it)
 - CSP is always set in Next.js, not Caddy — it's application-specific
 

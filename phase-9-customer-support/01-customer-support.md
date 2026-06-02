@@ -69,7 +69,7 @@ Use Tawk.to. It handles live chat, help desk, knowledge base, and feedback in on
 
 ## Integration with Alerting
 
-Support volume is a signal. Route it to the unified alerting hub (phase-11-observability/01-unified-alerting.md):
+Support volume is a signal. Route it to the unified alerting hub (phase-10-observability/01-unified-alerting.md):
 
 **Design decisions:**
 - Tawk.to can send webhooks on new conversations — post a notification to the #alerts-info Discord channel when a new support conversation starts

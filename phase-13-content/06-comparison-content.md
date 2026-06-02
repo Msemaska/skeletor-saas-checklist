@@ -69,7 +69,7 @@ For "Best [Category] Tools" keywords:
 
 ## Production Pipeline
 
-1. Identify comparison keywords from keyword research (phase-14-content/03-keyword-research.md)
+1. Identify comparison keywords from keyword research (phase-13-content/03-keyword-research.md)
 2. Research the competitor: current features, pricing, reviews (G2, Capterra, Reddit)
 3. Claude drafts the comparison from your research
 4. Human edit: verify every feature claim against the competitor's live site, add screenshots, add honest "where they win" section

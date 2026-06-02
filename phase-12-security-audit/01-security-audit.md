@@ -72,7 +72,7 @@ Reference: phase-3-core-product/03-auth.md (Session Management)
 
 ## 5. API & Webhook Security
 
-Reference: phase-8/02-stripe-architecture.md, phase-3-core-product/04-data-access.md
+Reference: phase-8-business-wrapper/02-stripe-architecture.md, phase-3-core-product/04-data-access.md
 
 **Verify:**
 - [ ] Stripe webhook signatures are verified on every webhook request
@@ -84,7 +84,7 @@ Reference: phase-8/02-stripe-architecture.md, phase-3-core-product/04-data-acces
 
 ## 6. Security Headers
 
-Reference: phase-7-infrastructure/05-security-headers.md
+Reference: phase-7-infrastructure/10-security-headers.md
 
 **Verify:**
 - [ ] Strict-Transport-Security header present (max-age=31536000, includeSubDomains, preload)
@@ -97,7 +97,7 @@ Reference: phase-7-infrastructure/05-security-headers.md
 
 ## 7. Secrets & Environment Variables
 
-Reference: phase-7-infrastructure/07-local-development.md (Environment Variables)
+Reference: phase-7-infrastructure/06-local-development.md (Environment Variables)
 
 **Verify:**
 - [ ] No API keys, tokens, or secrets in the codebase (search the git history, not just the current code)
@@ -109,7 +109,7 @@ Reference: phase-7-infrastructure/07-local-development.md (Environment Variables
 
 ## 8. Dependencies
 
-Reference: phase-7-infrastructure/06-dependency-scanning.md
+Reference: phase-7-infrastructure/11-dependency-scanning.md
 
 **Verify:**
 - [ ] `npm audit` shows no critical or high severity vulnerabilities
@@ -118,7 +118,7 @@ Reference: phase-7-infrastructure/06-dependency-scanning.md
 
 ## 9. Infrastructure
 
-Reference: phase-7-infrastructure/03-server-provisioning.md
+Reference: phase-7-infrastructure/02-hosting-deployment.md
 
 **Railway:**
 - [ ] Environment variable scoping is correct (production keys not in preview deployments)

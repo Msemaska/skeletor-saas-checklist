@@ -17,7 +17,7 @@ Use UptimeRobot for both uptime monitoring and the public status page.
 | API (if public) | api.yourdomain.com/health | 5 minutes | 2 consecutive failures |
 
 **Design decisions:**
-- Monitor the health check endpoint (phase-8/02-health-check.md), not just the homepage — the health check verifies database connectivity, not just that the server responds
+- Monitor the health check endpoint (phase-7-infrastructure/09-health-check.md), not just the homepage — the health check verifies database connectivity, not just that the server responds
 - Check interval: 5 minutes. More frequent checks (1 minute) are unnecessary for an MVP and may count against UptimeRobot's free tier limits.
 - Alert after 2 consecutive failures (10 minutes) — a single failure could be a network blip. Two consecutive failures indicate real downtime.
 - Monitor from multiple geographic locations — UptimeRobot does this by default
@@ -67,7 +67,7 @@ When downtime occurs, communicate proactively:
 
 ## Edge Cases
 
-- **Health check is up but the app is broken** — the health check only verifies database connectivity. If the app has a bug that breaks all pages but the health endpoint still returns 200, monitoring won't detect it. The health check should verify core functionality, not just process liveness (covered in phase-8/02-health-check.md).
+- **Health check is up but the app is broken** — the health check only verifies database connectivity. If the app has a bug that breaks all pages but the health endpoint still returns 200, monitoring won't detect it. The health check should verify core functionality, not just process liveness (covered in phase-7-infrastructure/09-health-check.md).
 - **UptimeRobot itself is down** — rare, but possible. UptimeRobot's status is independent of your app. If UptimeRobot is down, you won't get alerts. This is an accepted risk — you'd notice from user reports or Sentry error spikes.
 - **Status page shows "up" but users report issues** — regional issues, intermittent bugs, or slow performance won't trigger downtime alerts. The status page shows uptime (is the server responding), not performance (is it fast) or correctness (is it bug-free).
 - **Scheduled maintenance** — before planned downtime, create a scheduled maintenance event on the status page. This prevents customers from seeing an unexpected "down" status and panicking.

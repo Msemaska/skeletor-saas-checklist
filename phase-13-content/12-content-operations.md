@@ -20,7 +20,7 @@ Every content item in the calendar has:
 |---|---|
 | Title | The content piece title |
 | Type | Blog post, tweet thread, comparison page, case study, changelog, video, carousel, pSEO |
-| Target keyword | From keyword research (phase-14-content/03-keyword-research.md) |
+| Target keyword | From keyword research (phase-13-content/03-keyword-research.md) |
 | Status | Idea → Outlined → Drafted → Edited → Scheduled → Published |
 | Publish date | Scheduled date |
 | Topic cluster | Which pillar this supports |
@@ -70,7 +70,7 @@ Every blog post automatically generates:
 ### Repurposing Process
 
 **Design decisions:**
-- Repurposing happens immediately after publishing the blog post — it's step 8 of the blog production pipeline (phase-14-content/04-blog-posts.md)
+- Repurposing happens immediately after publishing the blog post — it's step 8 of the blog production pipeline (phase-13-content/04-blog-posts.md)
 - Claude handles the repurposing — provide the full blog post text and ask for each output format
 - Human reviews each repurposed piece before scheduling (Claude's thread may miss the best insight, or the LinkedIn tone may be off)
 - Social posts are scheduled via Postiz to go out over the following week — don't dump all distribution on the same day

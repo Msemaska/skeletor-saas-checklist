@@ -32,7 +32,7 @@ Paid advertising to accelerate user acquisition after organic channels are estab
 - Install the Meta pixel on your marketing site to build the retargeting audience
 - Retargeting ads: show a product screenshot + the primary benefit + CTA ("Start your free trial")
 - Prospecting ads (cold audience): use lookalike audiences based on your existing users or waitlist subscribers
-- Creative assets come from the visual asset library (phase-14-content/02-visual-asset-library.md) and ad creatives (phase-14-content/10-visual-content.md)
+- Creative assets come from the visual asset library (phase-13-content/02-visual-asset-library.md) and ad creatives (phase-13-content/10-visual-content.md)
 
 ### Other Platforms
 
@@ -56,7 +56,7 @@ Paid advertising to accelerate user acquisition after organic channels are estab
 **Design decisions:**
 - UTM parameters on every ad URL: utm_source, utm_medium, utm_campaign, utm_content
 - UTM convention: source=google/meta/linkedin, medium=cpc/retargeting, campaign=branded/comparison/category, content=variant-a/variant-b
-- PostHog tracks which UTM sources convert to trials and paid users (phase-11-observability/02-product-analytics.md)
+- PostHog tracks which UTM sources convert to trials and paid users (phase-10-observability/02-product-analytics.md)
 - Calculate cost per acquisition (CPA) per campaign weekly: ad spend ÷ conversions
 - Kill campaigns with a CPA above your target (LTV ÷ 3 is a reasonable maximum CPA — if LTV is $300, CPA should be under $100)
 

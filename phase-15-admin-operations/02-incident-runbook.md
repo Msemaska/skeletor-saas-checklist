@@ -26,7 +26,7 @@ Every incident follows the same 5-step process:
 ### 1. Detect
 
 **Design decisions:**
-- Detection comes from: unified alerting hub (phase-10-customer-support/01-unified-alerting.md), user reports via Tawk.to, Sentry error spike, UptimeRobot downtime alert
+- Detection comes from: unified alerting hub (phase-10-observability/01-unified-alerting.md), user reports via Tawk.to, Sentry error spike, UptimeRobot downtime alert
 - The person who detects the incident starts the response — don't wait for someone else to notice
 
 ### 2. Assess
@@ -48,8 +48,8 @@ Every incident follows the same 5-step process:
 ### 4. Fix
 
 **Design decisions:**
-- If caused by a bad deployment: rollback immediately (phase-7-infrastructure/06-cicd-pipeline.md)
-- If caused by a database issue: check backups, consider point-in-time recovery (phase-7-infrastructure/03-database-backups.md)
+- If caused by a bad deployment: rollback immediately (phase-7-infrastructure/05-cicd-pipeline.md)
+- If caused by a database issue: check backups, consider point-in-time recovery (phase-7-infrastructure/03b-database-backups.md)
 - If caused by a third-party service: check the service's status page, implement workaround if possible, notify users that the issue is external
 - If cause is unknown: add logging, reproduce the issue, fix and deploy
 - Document every action taken during the fix (timestamp + what was done) — this becomes the post-mortem timeline
@@ -123,7 +123,7 @@ Every incident follows the same 5-step process:
 
 - **Incident happens while the runbook author is unavailable** — the runbook must be self-contained. Any team member should be able to follow it without additional context.
 - **Multiple incidents at the same time** — prioritise by severity. Critical over High, High over Medium. If two Critical incidents happen simultaneously, fix the one affecting more users first.
-- **Incident is caused by a security breach** — follow the incident process AND the security audit procedure (phase-12-email-domain/01-security-audit.md). Take the affected system offline immediately. Do not communicate publicly until you understand the scope.
+- **Incident is caused by a security breach** — follow the incident process AND the security audit procedure (phase-12-security-audit/01-security-audit.md). Take the affected system offline immediately. Do not communicate publicly until you understand the scope.
 - **User data was lost** — check backups. Restore from the most recent backup. Notify affected users with transparency about what happened and what was lost.
 
 ## Implementation Checklist

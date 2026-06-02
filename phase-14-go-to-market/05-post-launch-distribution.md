@@ -8,7 +8,7 @@ Ongoing distribution activities after the initial launch — getting listed in n
 
 ## Niche Directories
 
-Beyond the general startup directories submitted at launch (phase-15-go-to-market/02-launch-distribution.md), submit to directories specific to your industry or audience.
+Beyond the general startup directories submitted at launch (phase-14-go-to-market/02-launch-distribution.md), submit to directories specific to your industry or audience.
 
 **Design decisions:**
 - Identify 10 niche directories for your category by searching "[your category] directory", "[your industry] tools list", "best [category] for [audience]"
@@ -26,7 +26,7 @@ Writing articles for other blogs in your industry — the article provides value
 - Pitch topics that are relevant to the host blog's audience AND mention your product naturally — not a product review, a genuinely useful article that references your tool as one way to solve the problem
 - The article links to your site from the author bio AND from a contextual mention within the article body
 - Write the article yourself (Claude drafts, you edit) — don't ask the host to write about your product
-- Guest posts also serve LLM optimization (phase-14-content/13-llm-optimization.md) — third-party mentions on authoritative sites increase AI citation likelihood
+- Guest posts also serve LLM optimization (phase-13-content/13-llm-optimization.md) — third-party mentions on authoritative sites increase AI citation likelihood
 
 ## GitHub Awesome Lists
 

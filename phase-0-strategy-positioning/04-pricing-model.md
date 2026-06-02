@@ -104,7 +104,7 @@ Decisions you need to make now (they affect Stripe integration):
 - Credit card required for trial?
 - What happens when trial ends? (downgrade to free vs lock out)
 - What happens on failed payment? (grace period length)
-- Proration: payment always happens at time of decision. Monthly→Annual same plan: charge annual now, annual starts after current month ends. Monthly→Annual upgrade: full proration, starts immediately. See phase-9-business-wrapper/02-stripe-architecture.md for all four cases.
+- Proration: payment always happens at time of decision. Monthly→Annual same plan: charge annual now, annual starts after current month ends. Monthly→Annual upgrade: full proration, starts immediately. See phase-8-business-wrapper/02-stripe-architecture.md for all four cases.
 - Refund policy? (no refunds, prorated, 30-day money-back)
 - Per-seat pricing or per-account?
 - Usage overage handling? (hard limit until top-up, auto-top-up, throttle)

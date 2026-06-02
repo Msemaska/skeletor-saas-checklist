@@ -16,7 +16,7 @@ This is **not** a UI flow. UI flows live in Phase 5 (which screens, which button
 | Value proposition (`01-value-proposition.md`) | *What* outcome they get |
 | **User journey (this file)** | **What path they take and what proves they reached value** |
 | Onboarding (`phase-5-ui-ux/06-onboarding.md`) | *How* the first-run UI walks them through it |
-| Product analytics (`phase-11-observability/02-product-analytics.md`) | *How* we instrument the journey |
+| Product analytics (`phase-10-observability/02-product-analytics.md`) | *How* we instrument the journey |
 
 One journey per ICP. If you have two ICPs, you have two journeys — different triggers, different aha moments, different success signals.
 

@@ -12,13 +12,13 @@ How to get your product mentioned in AI-generated responses from ChatGPT, Claude
 - LLMs pull from publicly crawled web content. Your product appears in AI responses when it's mentioned frequently across authoritative, independent sources.
 - Third-party mentions carry more weight than self-promotion.
 - Structured, factual content (comparison tables, FAQ answers, feature lists) is easier for LLMs to parse and cite than narrative prose.
-- Build 5+ interconnected pages per topic cluster (phase-14-content/03-keyword-research.md).
+- Build 5+ interconnected pages per topic cluster (phase-13-content/03-keyword-research.md).
 
 ## Strategy
 
 ### 1. Structured Comparison Content
 
-Already covered in detail in phase-14-content/06-comparison-content.md. The key decisions for LLM optimization:
+Already covered in detail in phase-13-content/06-comparison-content.md. The key decisions for LLM optimization:
 
 **Design decisions:**
 - Every comparison page includes a feature comparison table — LLMs parse tables better than paragraphs
@@ -49,7 +49,7 @@ Third-party mentions are the strongest signal for LLM inclusion.
 - Post on Reddit in relevant subreddits when genuinely helpful — Reddit threads are a major LLM training source
 
 **How to ask for reviews:**
-- After a customer completes their first 3 months and has measurable results (same timing as case studies — phase-14-content/07-case-studies.md)
+- After a customer completes their first 3 months and has measurable results (same timing as case studies — phase-13-content/07-case-studies.md)
 - Send a short email: "Would you mind leaving a quick review on G2? It takes 5 minutes and helps other [audience] find us."
 - Include the direct link to the review form — don't make them navigate to it
 - Don't offer incentives for reviews (violates most platform terms of service)

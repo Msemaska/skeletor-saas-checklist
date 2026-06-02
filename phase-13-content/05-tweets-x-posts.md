@@ -72,7 +72,7 @@ Tweets and threads on X that drive engagement, build audience, and convert follo
 
 ## Production Pipeline
 
-1. Check keyword research (phase-14-content/03-keyword-research.md) and blog post pipeline for topics
+1. Check keyword research (phase-13-content/03-keyword-research.md) and blog post pipeline for topics
 2. Claude drafts the tweet or thread from a topic + format
 3. Review: does it have a hook? Does it provide value? Does it sound human?
 4. Add visual if applicable (screenshot, GIF, meme)

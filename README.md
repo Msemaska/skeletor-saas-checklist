@@ -20,6 +20,34 @@ The project is structured as a phased checklist with deep-dive reference files:
 - **`phase-X/` directories** — deep-dive files for each checklist item, containing the actual design decisions, edge cases, security considerations, and implementation checklists
 - **`CLAUDE.md`** — the rules for how these files are written and maintained
 
+## Install
+
+Skeletor is consumed by an AI agent — there's nothing to compile or run. Pick whichever delivery fits:
+
+### Option A — Claude Code plugin (recommended)
+
+Install Skeletor into **any** project so the AI can pull in the relevant phase on demand:
+
+```
+/plugin marketplace add Msemaska/skeletor-saas-checklist
+/plugin install skeletor@skeletor
+```
+
+Then in a SaaS project:
+
+- The **`skeletor`** skill auto-activates when you start planning or building a SaaS — it reads the checklist, scopes phases to your project type, and points the AI at the right deep-dive files.
+- Run **`/skeletor:init`** to generate a `PROGRESS.md` build roadmap (all applicable items, split into the three passes, each linking to its deep-dive file).
+
+### Option B — Template repo
+
+Copy the knowledge base into a new project with no git history:
+
+```
+npx degit Msemaska/skeletor-saas-checklist my-new-saas
+```
+
+Then tell the AI to read `saas-launch-checklist.md`, determine the project type from the table in `CLAUDE.md`, and generate `PROGRESS.md` before writing code.
+
 ## The Phases
 
 | Phase | Name | When |
@@ -105,7 +133,7 @@ The checkbox tracks completion. The priority marker (`[1]`, `[2]`, `[3]`) places
 
 ## Pass 3 — Post-Launch
 
-- [ ] `[3]` Referral program — `phase-17-growth-retention/02-referral-program.md`
+- [ ] `[3]` Referral program — `phase-16-growth-retention/02-referral-program.md`
 ```
 
 **Rules for generating PROGRESS.md:**
@@ -128,8 +156,8 @@ The checkbox tracks completion. The priority marker (`[1]`, `[2]`, `[3]`) places
 When you start building a feature, give the AI the relevant deep-dive file as context:
 
 - Building auth → provide `phase-3-core-product/03-auth.md`
-- Setting up Stripe → provide `phase-9-business-wrapper/02-stripe-architecture.md`
-- Creating the blog → provide `phase-14-content/04-blog-posts.md`
+- Setting up Stripe → provide `phase-8-business-wrapper/02-stripe-architecture.md`
+- Creating the blog → provide `phase-13-content/04-blog-posts.md`
 - Deploying to Railway → provide `phase-7-infrastructure/01-containerization.md` through `phase-7-infrastructure/11-dependency-scanning.md`
 
 The AI gets the architecture, design decisions, edge cases, what to test, security considerations, and common mistakes — all in one file. No improvisation needed.
@@ -154,15 +182,15 @@ When starting a new SaaS project with Skeletor, the AI handles the code — but 
 | Service | What to Do | When Needed |
 |---|---|---|
 | Cloudflare | Register domain, set up DNS | Phase 0 |
-| Google Workspace | Set up email (hello@yourdomain.com) | Phase 12 |
+| Google Workspace | Set up email (hello@yourdomain.com) | Phase 11 |
 | Neon | Create project, get connection string | Phase 3 |
-| Stripe | Create account, get test + live API keys | Phase 9 |
-| Resend | Create account, add sending domains | Phase 9 + 12 |
+| Stripe | Create account, get test + live API keys | Phase 8 |
+| Resend | Create account, add sending domains | Phase 8 + 11 |
 | Sentry | Create project, get DSN | Phase 3 |
-| PostHog | Create project, get API key | Phase 11 |
-| UptimeRobot | Create account, add monitors | Phase 11 |
-| Tawk.to | Create account, configure widget | Phase 10 |
-| Google Search Console | Verify site ownership | Phase 11 |
+| PostHog | Create project, get API key | Phase 10 |
+| UptimeRobot | Create account, add monitors | Phase 10 |
+| Tawk.to | Create account, configure widget | Phase 9 |
+| Google Search Console | Verify site ownership | Phase 10 |
 | Google OAuth | Create OAuth app, get client ID/secret | Phase 3 |
 | Apple Developer | If Apple Sign-In needed ($99/year) | Phase 3 |
 | GitHub | Create org, configure Dependabot | Phase 7 |
@@ -192,21 +220,21 @@ When starting a new SaaS project with Skeletor, the AI handles the code — but 
 | Task | When | Notes |
 |---|---|---|
 | Design logo and brand assets | Phase 1 | Use Claude to generate SVG |
-| Write value proposition and copy bank | Phase 0 + 14 | Fill in docs/copy-bank.md |
-| Configure Stripe products and prices | Phase 9 | Create in test mode first |
-| Set up DNS records (SPF, DKIM, DMARC) | Phase 12 | Follow phase-12-email-domain/01-email-infrastructure.md |
+| Write value proposition and copy bank | Phase 0 + 13 | Fill in docs/copy-bank.md |
+| Configure Stripe products and prices | Phase 8 | Create in test mode first |
+| Set up DNS records (SPF, DKIM, DMARC) | Phase 11 | Follow phase-11-email-domain/01-email-infrastructure.md |
 | Submit Google OAuth consent screen for verification | Phase 3 | Takes 2-4 weeks — start early |
-| Start domain warming | Phase 12 | 4 weeks before launch |
-| Submit to BetaList and directories | Phase 15 | 3 weeks before launch |
-| Write initial knowledge base articles | Phase 10 | Top 10 expected questions |
-| Record product demo video | Phase 14 | After core features are built |
-| Capture product screenshots | Phase 14 | After UI is stable |
-| Draft Product Hunt listing and maker comment | Phase 15 | From copy bank |
-| Set up social media accounts | Phase 15 | From copy bank bios |
-| Create Discord server for alerting | Phase 11 | Three channels: critical, warning, info |
+| Start domain warming | Phase 11 | 4 weeks before launch |
+| Submit to BetaList and directories | Phase 14 | 3 weeks before launch |
+| Write initial knowledge base articles | Phase 9 | Top 10 expected questions |
+| Record product demo video | Phase 13 | After core features are built |
+| Capture product screenshots | Phase 13 | After UI is stable |
+| Draft Product Hunt listing and maker comment | Phase 14 | From copy bank |
+| Set up social media accounts | Phase 14 | From copy bank bios |
+| Create Discord server for alerting | Phase 10 | Three channels: critical, warning, info |
 | Test backup restore | Phase 7 | At least once before launch |
 | Run security audit | Phase 12 | After all features built, before launch |
-| Test with real $1 payment on Stripe live mode | Phase 9 | Before public launch |
+| Test with real $1 payment on Stripe live mode | Phase 8 | Before public launch |
 
 ### The AI's Job vs The Human's Job
 

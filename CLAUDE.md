@@ -123,7 +123,7 @@ When creating or updating deep-dive files, search the web for current best pract
 │   ├── 03-auth.md
 │   ├── 04-data-access.md
 │   ├── 05-cache.md
-│   └── ... (remaining items 06-12)
+│   └── ... (remaining items 06-14)
 ├── phase-4-public-api/                          # Public/Customer API
 ├── phase-5-ui-ux/                          # UI/UX
 ├── phase-6-marketing-site/                          # Marketing Site

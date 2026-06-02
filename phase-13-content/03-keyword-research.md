@@ -149,7 +149,7 @@ Every high-priority keyword maps to a specific piece of content. No keyword shou
 **Design decisions:**
 - After 4 weeks of being live, review Search Console's Performance report
 - Look for: pages with high impressions but low click-through rate (title/description needs improvement), keywords ranking positions 11-30 (close to page 1 — create or improve content to push higher), keywords you rank for that you didn't target (opportunity — create dedicated content)
-- This is covered in phase-11-observability/06-seo-monitoring.md but the insights feed back into keyword research
+- This is covered in phase-10-observability/06-seo-monitoring.md but the insights feed back into keyword research
 
 ## How Keywords Feed Other Phases
 

@@ -4,7 +4,7 @@
 
 ## What It Is
 
-Ad creatives and social media graphics — the visual assets produced on an ongoing basis for campaigns, social posts, and promotions. Different from the visual asset library (phase-14-content/02-visual-asset-library.md) which is foundational assets created once. This covers the ongoing production of campaign-specific visuals.
+Ad creatives and social media graphics — the visual assets produced on an ongoing basis for campaigns, social posts, and promotions. Different from the visual asset library (phase-13-content/02-visual-asset-library.md) which is foundational assets created once. This covers the ongoing production of campaign-specific visuals.
 
 ## Ad Creatives
 
@@ -24,7 +24,7 @@ Ad creatives and social media graphics — the visual assets produced on an ongo
 - Use your brand colours and typography from the design system (phase-1-brand-foundation/05-design-system.md)
 - Generate programmatically with @vercel/og — create React templates for each ad format, pass in different headlines and screenshots to produce variants
 - Create 3 variants per campaign for A/B testing: same message, different visual. Or same visual, different headline.
-- Headlines come from the copy bank (phase-14-content/01-foundational-copy-bank.md) — don't write new copy for every ad
+- Headlines come from the copy bank (phase-13-content/01-foundational-copy-bank.md) — don't write new copy for every ad
 
 ### Production Pipeline
 

@@ -11,7 +11,7 @@ In-app Net Promoter Score surveys that measure user satisfaction and collect qua
 ### Design Decisions
 
 **Design decisions:**
-- Use PostHog Surveys to create and deliver the NPS survey — it's already in the stack for product analytics (phase-11-observability/02-product-analytics.md)
+- Use PostHog Surveys to create and deliver the NPS survey — it's already in the stack for product analytics (phase-10-observability/02-product-analytics.md)
 - The survey has 2 questions:
   1. "How likely are you to recommend [product name] to a friend or colleague?" (0-10 scale, standard NPS question)
   2. "What could we improve?" (open-ended text field, optional)

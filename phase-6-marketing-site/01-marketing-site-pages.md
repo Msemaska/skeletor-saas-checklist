@@ -144,7 +144,7 @@ Visual tour of the product for users who want to see it before signing up.
 ## Edge Cases
 
 - **No social proof yet** — don't fake testimonials or logos. Skip the social proof section until you have real ones. A landing page without testimonials is fine — a landing page with fake ones destroys trust.
-- **Pricing changes after launch** — update the pricing page, but don't change existing subscribers' prices (Stripe handles this — covered in phase-9-business-wrapper/02-stripe-architecture.md).
+- **Pricing changes after launch** — update the pricing page, but don't change existing subscribers' prices (Stripe handles this — covered in phase-8-business-wrapper/02-stripe-architecture.md).
 - **Waitlist page still accessible after launch** — redirect /waitlist to / and show a banner: "We're live! Sign up now."
 - **Contact form spam** — rate limit the contact form endpoint (5 submissions per IP per hour). Don't add CAPTCHA — it hurts conversion more than spam costs.
 

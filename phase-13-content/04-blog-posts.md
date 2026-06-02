@@ -32,7 +32,7 @@ The outline (step 3) is a checkpoint. It gets reviewed and approved before any p
 ## Step 1: Topic Selection
 
 **Design decisions:**
-- Every post starts from the keyword research document (phase-14-content/03-keyword-research.md)
+- Every post starts from the keyword research document (phase-13-content/03-keyword-research.md)
 - Pick the highest-priority keyword that doesn't have content yet
 - Identify the primary keyword (highest volume in the cluster) and 3 secondary/long-tail keywords from the same cluster
 - Map "People Also Ask" questions for the FAQ section
@@ -60,7 +60,7 @@ Before writing, read what already ranks.
 ## Step 4: AI Draft
 
 **Design decisions:**
-- Provide Claude with: the approved outline, voice guidelines (see Voice section below), the copy bank (phase-14-content/01-foundational-copy-bank.md), and any stats you've already found
+- Provide Claude with: the approved outline, voice guidelines (see Voice section below), the copy bank (phase-13-content/01-foundational-copy-bank.md), and any stats you've already found
 - Word count: 2000 words for standard posts, 2500 words for pillar pages
 - The draft requires a human edit pass before publishing
 
@@ -123,7 +123,7 @@ Run through every item before declaring a post complete.
 - Blog posts are committed as PRs for review before merging to main
 - On merge, the site rebuilds and ISR serves the new post
 - Scheduled posts: set publishedAt to a future date. The blog index filters future posts at build time.
-- After publishing, submit the URL to Google Search Console for faster indexing (phase-11-observability/06-seo-monitoring.md)
+- After publishing, submit the URL to Google Search Console for faster indexing (phase-10-observability/06-seo-monitoring.md)
 
 ## Step 8: Distribute
 

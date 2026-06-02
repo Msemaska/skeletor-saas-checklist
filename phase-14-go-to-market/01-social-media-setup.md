@@ -26,7 +26,7 @@ Setting up social media accounts, branding them consistently, connecting them to
 
 ## Branding Each Account
 
-Every account uses assets from the copy bank (phase-14-content/01-foundational-copy-bank.md) and visual asset library (phase-14-content/02-visual-asset-library.md):
+Every account uses assets from the copy bank (phase-13-content/01-foundational-copy-bank.md) and visual asset library (phase-13-content/02-visual-asset-library.md):
 
 **Design decisions:**
 - Profile image: logomark on all accounts (consistent, recognisable at small size)

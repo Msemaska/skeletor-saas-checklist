@@ -50,6 +50,8 @@ Ordered from foundational to nice-to-have.
 10. `[1]` Background & scheduled jobs (async processing, cron tasks, cleanup) — **Trigger.dev + pg_cron**
 11. `[1]` AI integration (if applicable) — **Claude API (text + vision) + Recraft (image generation)**
 12. `[1]` Error handling & logging strategy — **Pino + Sentry + custom error types**
+13. `[1]` Team / organization management & RBAC (orgs, roles, permissions, member invites, seats — if B2B / multi-user) — **Neon Auth (Better Auth Organization plugin)**
+14. `[1]` Audit logging (append-only trail of user + admin actions for security & compliance) — **Custom (Neon append-only table)**
 
 ## Phase 4: Public / Customer API (if applicable)
 
@@ -71,6 +73,7 @@ Ordered from foundational to nice-to-have.
 6. `[1]` Onboarding (first-run wizard, tooltip tour, progressive disclosure) — **Custom (Next.js + Zustand) + Onborda**
 7. `[1]` Localization & formatting (currency, timezone, date) — **Intl.NumberFormat + date-fns + date-fns-tz**
 8. `[1]` Component inventory (primitive install list, composite components for app shell, auth, billing, data display, marketing) — **Shadcn + MagicUI**
+9. `[1]` Account & settings pages (profile, change password, active sessions, connected accounts, danger zone) — **Shadcn + React Hook Form + Neon Auth**
 
 ## Phase 6: Marketing Site & Technical SEO
 
@@ -100,6 +103,7 @@ Ordered from foundational to nice-to-have.
 3. `[1]` Stripe sandbox & testing (test mode, test cards, webhook testing, flow verification) — **Stripe Test Mode + Stripe CLI**
 4. `[2]` Stripe production launch (live keys, Tax, dunning, customer portal, branding) — **Stripe**
 5. `[2]` Legal pages (privacy policy, terms, cookie consent, AUP, DPA, refund policy) — **Claude + Custom pages**
+6. `[3]` GDPR self-service (user-initiated data export + account deletion — right to access & erasure) — **Custom (Next.js Server Actions + R2 export)**
 
 ## Phase 9: Customer Support
 

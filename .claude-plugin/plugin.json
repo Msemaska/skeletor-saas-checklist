@@ -1,0 +1,14 @@
+{
+  "name": "skeletor",
+  "displayName": "Skeletor — SaaS Launch Checklist & Reference Architecture",
+  "version": "0.1.0",
+  "description": "Opinionated, deterministic reference architecture for building a SaaS from idea to automated business. Ships a phased master checklist plus deep-dive design decisions for every system a SaaS needs. Use when planning, scoping, or building a SaaS product, generating a build roadmap, or filling gaps in a product plan.",
+  "author": {
+    "name": "Martynas Masliukas",
+    "url": "https://github.com/Msemaska"
+  },
+  "homepage": "https://github.com/Msemaska/skeletor-saas-checklist",
+  "repository": "https://github.com/Msemaska/skeletor-saas-checklist",
+  "license": "MIT",
+  "keywords": ["saas", "checklist", "reference-architecture", "nextjs", "launch", "roadmap", "startup"]
+}

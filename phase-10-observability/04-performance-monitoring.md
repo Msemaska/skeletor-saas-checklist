@@ -68,7 +68,7 @@ Monitoring tells you there's a problem. The fix depends on the cause:
 ## Edge Cases
 
 - **Performance degrades gradually** — no single PR causes a spike, but over 3 months LCP goes from 1.5s to 3.5s. Weekly review of performance dashboards catches gradual degradation. Set up alerts for sustained threshold breaches, not just spikes.
-- **Performance differs by region** — users in Europe experience 2x latency because the server is in US. Ensure server region matches your primary user base (covered in phase-7-infrastructure/03-server-provisioning.md).
+- **Performance differs by region** — users in Europe experience 2x latency because the server is in US. Ensure server region matches your primary user base (covered in phase-7-infrastructure/02-hosting-deployment.md).
 - **Performance tests pass in CI but fail for real users** — CI runs on fast machines with fast networks. RUM data from real users on slow devices and 3G connections tells the true story. Don't rely only on Lighthouse scores.
 - **Third-party script kills performance** — an analytics or chat widget loads a 500KB script. Monitor third-party script impact and lazy-load non-critical scripts.
 

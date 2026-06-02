@@ -30,7 +30,7 @@ Track events that answer: "Are users getting value from the product?"
 - Track events on the server side (Server Actions, API routes), not the client — server-side events are reliable (no ad blockers, no browser differences) and tied to real business logic
 - Every event includes: user ID, workspace ID, timestamp, and relevant properties (plan name, feature name, etc.)
 - Don't track everything — track events that map to your business questions. "How many button clicks on the settings page" is not useful. "How many users complete onboarding" is.
-- Respect cookie consent — if the user rejected analytics cookies, don't send events to PostHog (covered in phase-9-business-wrapper/05-legal-pages.md)
+- Respect cookie consent — if the user rejected analytics cookies, don't send events to PostHog (covered in phase-8-business-wrapper/05-legal-pages.md)
 
 ### Funnels
 

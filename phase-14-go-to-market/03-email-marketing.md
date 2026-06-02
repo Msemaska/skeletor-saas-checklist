@@ -4,7 +4,7 @@
 
 ## What It Is
 
-Marketing emails sent to prospects and users to drive sign-ups, engagement, and retention. Different from transactional emails (phase-9-business-wrapper/01-transactional-emails.md) which are system-triggered. Marketing emails are intentionally sent to promote, nurture, or re-engage.
+Marketing emails sent to prospects and users to drive sign-ups, engagement, and retention. Different from transactional emails (phase-8-business-wrapper/01-transactional-emails.md) which are system-triggered. Marketing emails are intentionally sent to promote, nurture, or re-engage.
 
 ## Provider
 
@@ -33,7 +33,7 @@ A series of emails sent automatically after someone subscribes to the newsletter
 | 1 | Day 0 | Welcome + the single most valuable insight about the problem your product solves |
 | 2 | Day 2 | A how-to tip related to your category (actionable, no product pitch) |
 | 3 | Day 5 | Your product's origin story — why you built it, the problem you experienced |
-| 4 | Day 9 | A case study or customer result (phase-14-content/07-case-studies.md) |
+| 4 | Day 9 | A case study or customer result (phase-13-content/07-case-studies.md) |
 | 5 | Day 14 | Direct CTA — "Ready to try [product]?" with a free trial link |
 
 **Design decisions:**
@@ -57,7 +57,7 @@ A series of emails sent automatically after someone subscribes to the newsletter
 - Sent weekly on Tuesday
 - Content: latest blog post headline + 2-sentence summary + "Read more" link, 2 changelog highlights, 1 curated industry insight or tip
 - Keep it under 300 words
-- From address: hello@vibes.yourdomain.com (marketing subdomain — phase-12-email-domain/01-email-infrastructure.md)
+- From address: hello@vibes.yourdomain.com (marketing subdomain — phase-11-email-domain/01-email-infrastructure.md)
 - Unsubscribe link in every email (mandatory)
 - Track open rate and click rate — review weekly
 
@@ -67,7 +67,7 @@ A series of emails sent automatically after someone subscribes to the newsletter
 - Never send more than 2 marketing emails per week to any subscriber (drip + newsletter combined)
 - If a drip email and the weekly newsletter fall on the same day, delay the newsletter by 1 day for that subscriber
 - Respect unsubscribe immediately — remove from all marketing lists within 24 hours
-- Don't send marketing emails to users who have rejected analytics/marketing cookies (phase-9-business-wrapper/05-legal-pages.md)
+- Don't send marketing emails to users who have rejected analytics/marketing cookies (phase-8-business-wrapper/05-legal-pages.md)
 - All marketing emails include: unsubscribe link, company address, link to notification preferences
 
 ## What to Test

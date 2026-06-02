@@ -66,7 +66,7 @@ Total: 45 seconds per update video.
 - Before/after format is the most engaging structure for update videos
 - Post natively on Twitter/X (not as a YouTube link) — native video gets the strongest algorithmic boost
 - Also post on LinkedIn for B2B audiences
-- Include in the changelog entry (phase-14-content/08-changelog.md) as the visual
+- Include in the changelog entry (phase-13-content/08-changelog.md) as the visual
 
 ## Podcast Guest Appearances
 
@@ -86,7 +86,7 @@ Getting invited onto podcasts in your niche to reach new audiences.
 
 **Design decisions:**
 - Prepare 3 talking points with specific stories and numbers — not generic advice
-- Have your elevator pitch ready (from the copy bank — phase-14-content/01-foundational-copy-bank.md)
+- Have your elevator pitch ready (from the copy bank — phase-13-content/01-foundational-copy-bank.md)
 - Mention your product naturally during the conversation — once when introducing yourself and once when a topic connects to what you built. Not more.
 - Ask the host to include a link to your product in the show notes
 - After the episode airs: share on social media, tag the host, add to your "As seen on" section if you have one

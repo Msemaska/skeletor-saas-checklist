@@ -13,9 +13,9 @@ Where to announce your product at launch to get initial users, backlinks, and vi
 **Design decisions:**
 - Launch on a Tuesday
 - Post at 12:01 AM PST (Product Hunt resets daily at midnight PST)
-- Tagline: under 60 characters, from the copy bank (phase-14-content/01-foundational-copy-bank.md)
+- Tagline: under 60 characters, from the copy bank (phase-13-content/01-foundational-copy-bank.md)
 - Description: under 500 characters, from the copy bank's short description
-- Gallery: 5 images from the visual asset library (phase-14-content/02-visual-asset-library.md) — first image is the hero, include product screenshots, feature GIFs, and the demo video thumbnail
+- Gallery: 5 images from the visual asset library (phase-13-content/02-visual-asset-library.md) — first image is the hero, include product screenshots, feature GIFs, and the demo video thumbnail
 - First comment: the maker comment, pre-written in the copy bank. Post immediately after the listing goes live.
 - Hunter: launch yourself (self-hunting)
 - Engage with every comment throughout the day
@@ -71,7 +71,7 @@ Submit to these directories before launch (some have review periods):
 **Design decisions:**
 - Listing descriptions and assets come from the copy bank and visual asset library — don't write custom copy for each directory
 - Submit to BetaList 3 weeks before launch to account for their review period
-- G2 and Capterra profiles are also important for LLM optimization (phase-14-content/13-llm-optimization.md)
+- G2 and Capterra profiles are also important for LLM optimization (phase-13-content/13-llm-optimization.md)
 
 ## Launch Day Sequence
 
