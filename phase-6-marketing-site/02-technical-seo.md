@@ -17,6 +17,19 @@ Every page needs a unique title and description that accurately describe the pag
 - Description length: 150–160 characters. Summarise what the page offers and include a call to action.
 - Every page has a unique title and description — no two pages share the same meta tags
 
+## On-Page SEO (Landing Page)
+
+The homepage is your highest-authority page and the one most likely to rank for your core term. It carries a double burden: it must convert visitors (covered in `phase-6-marketing-site/01-marketing-site-pages.md`) and rank for the product's primary keyword. The conversion-first copy and the SEO targeting are reconciled here, not traded off.
+
+**Design decisions:**
+- Pick one primary keyword for the homepage — the category term a buyer searches when they don't know your brand yet (e.g. "client portal software"), not your brand name. Brand terms you already win. Source it from `phase-13-content/03-keyword-research.md`.
+- The homepage `<title>` leads with the value proposition and includes the primary keyword: "Primary Keyword — One-Line Value Prop". This is the one page that does not follow the "Page Name — Product Name" format, because the homepage's "page name" is the value proposition itself.
+- Exactly one `<h1>` per page. On the homepage it is the hero headline from `phase-0-strategy-positioning/01-value-proposition.md`. Write it for humans first; fold the primary keyword in naturally only if it doesn't weaken the hook. Never keyword-stuff the H1.
+- Section headings are a single, ordered hierarchy: one `<h1>`, then `<h2>` per major section (features, how it works, pricing, FAQ), `<h3>` for items inside a section. Never skip a level and never pick a heading tag for its visual size — style with CSS, structure with the tag.
+- The primary keyword and its close variants appear in the hero subheadline and at least one section heading — placed where they read naturally, never forced.
+- Internal links: the landing page links to the highest-value indexable pages (features, pricing, top use-case and comparison pages) using descriptive anchor text, not "learn more". These links pass authority from the homepage to the pages you want to rank. Reserve "learn more" / "get started" for buttons, which carry no SEO weight.
+- One descriptive, keyword-relevant anchor per destination — don't link the same page five times from the homepage.
+
 ## OG Images (Social Sharing)
 
 When someone shares a link to your site on Twitter, LinkedIn, Discord, or Slack, the OG image is the preview card that appears.
@@ -76,6 +89,8 @@ JSON-LD markup that helps search engines understand your content and display ric
 **Design decisions:**
 - Use manual JSON-LD in each page's `<head>` — no additional library needed
 - `Organization` schema on the homepage (company name, logo, social profiles) — add at launch
+- `WebSite` schema on the homepage (site name, URL) — add at launch. It lets Google show your site name and, where eligible, a sitelinks search box.
+- `SoftwareApplication` schema on the homepage describing the product (name, category, operating system, offers/pricing) — add at launch. This is what surfaces your product in rich results and feeds AI summaries with structured pricing and category data.
 - `Article` / `BlogPosting` schema on every blog post — required at launch if the blog is live. Full spec covered in `phase-6-marketing-site/03-blog-system.md`
 - `BreadcrumbList` schema on blog posts — add at launch alongside Article schema
 - `FAQ` schema on the pricing page FAQ section — add at launch (enables FAQ rich results in Google)
@@ -84,6 +99,9 @@ JSON-LD markup that helps search engines understand your content and display ric
 
 - Every page has a unique meta title under 60 characters
 - Every page has a unique meta description of 150 characters
+- Homepage title includes the primary keyword and leads with the value proposition
+- Every page has exactly one `<h1>` and a heading hierarchy with no skipped levels
+- Homepage links to features, pricing, and top use-case/comparison pages with descriptive anchor text
 - OG image renders correctly when sharing a link on Twitter and LinkedIn
 - Sitemap.xml is accessible and includes all marketing pages
 - Sitemap.xml excludes app pages, auth pages, and API routes
@@ -96,12 +114,17 @@ JSON-LD markup that helps search engines understand your content and display ric
 - **Blog post URL changes** — if you rename a blog post's slug after it's been indexed, the old URL returns 404 and loses its search equity. Add a 301 redirect from the old slug to the new one.
 - **Duplicate content across pages** — if features page and use case page describe the same feature with similar wording, Google may treat one as a duplicate. Canonical URLs help, but distinct content per page is the real fix.
 - **OG image not updating after change** — social platforms cache OG images aggressively. After updating an OG image, use each platform's cache invalidation tool (Twitter Card Validator, LinkedIn Post Inspector, Facebook Sharing Debugger) to refresh.
+- **Multiple H1s from a component library** — hero components and section headers sometimes default to `<h1>`, leaving a page with several. Audit the rendered page and keep exactly one; demote the rest to `<h2>`/`<h3>`.
+- **Homepage ranks for the brand but not the category** — the brand term wins by default; if the homepage targets nothing else, it never competes for buyers who don't know you yet. Set a primary category keyword and work it into the title, H1, and a section heading.
 - **Sitemap too large** — if you have thousands of blog posts, split the sitemap into multiple files (next-sitemap handles this automatically with `sitemapSize` config). For an MVP with fewer than 100 pages, this isn't a concern.
 
 ## Implementation Checklist
 
 - [ ] Next.js Metadata API configured per page (title, description)
 - [ ] All titles under 60 characters, all descriptions 150 characters
+- [ ] Homepage primary keyword chosen (from phase-13-content/03-keyword-research.md) and worked into title, H1, and a section heading
+- [ ] Exactly one `<h1>` per page; heading hierarchy ordered with no skipped levels
+- [ ] Homepage links to features, pricing, and top use-case/comparison pages with descriptive anchor text
 - [ ] @vercel/og configured for dynamic OG image generation
 - [ ] Default OG image created (product name, tagline, brand colours)
 - [ ] OG tags set on every page (og:title, og:description, og:image, twitter:card)
@@ -111,7 +134,7 @@ JSON-LD markup that helps search engines understand your content and display ric
 - [ ] Canonical URLs set on every page
 - [ ] All images have alt text
 - [ ] OG image tested on Twitter, LinkedIn, and Discord
-- [ ] Organization JSON-LD on homepage
+- [ ] Organization, WebSite, and SoftwareApplication JSON-LD on homepage
 - [ ] Article + BreadcrumbList JSON-LD on all blog posts (details in phase-6-marketing-site/03-blog-system.md)
 - [ ] FAQ JSON-LD on pricing page
 - [ ] Sitemap submitted to Google Search Console (phase-10-observability/06-seo-monitoring.md)
@@ -119,6 +142,10 @@ JSON-LD markup that helps search engines understand your content and display ric
 ## Common Mistakes
 
 - Same meta title on every page ("YourProduct" on all pages — each page needs a unique title)
+- Homepage targeting only the brand name (it already ranks for that — pick a category keyword buyers actually search)
+- Multiple `<h1>` tags on a page, or heading tags chosen for their font size instead of document structure
+- Keyword-stuffing the H1 or hero copy (reads as spam, weakens the hook, and Google discounts it)
+- Homepage CTAs as the only internal links ("get started" buttons pass no SEO value — add descriptive text links to key pages)
 - Meta descriptions over 160 characters (truncated, looks unprofessional in search results)
 - No OG image (shared links show a bare text preview with no visual — low click-through)
 - App pages indexed by search engines (users find sign-in pages in Google results)
